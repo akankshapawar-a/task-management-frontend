@@ -2,10 +2,12 @@
 import React, { useEffect, useState } from "react";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import AddIcon from "@mui/icons-material/Add";
-import { Button, IconButton } from "@mui/material";
+import { Box, Button, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import AddAnotherbtn from "./AddAnotherbtn";
 import axios from "axios";
+import ModalComponent from "../reusableComponents/ModalComponent";
+import CardBody from "../cardbody/CardBody";
 
 interface Card {
   _id: string;
@@ -25,7 +27,11 @@ const AddCards = () => {
   const [showNewColumnForm, setShowNewColumnForm] = useState<boolean>(false);
   const [showAddCard, setShowAddCard] = useState<{ [key: string]: boolean }>({});
   const [newCardText, setNewCardText] = useState<{ [key: string]: string }>({});
- 
+  const [open ,setOpen]=useState<boolean>(false);
+  const [selectCard,setSelectCard]=useState('');
+  const handleModalClose=()=>{
+   setOpen(false);
+  };
   const handleAddNewColumn = async() => {
     if (newColumnTitle.trim() === "") return;
   
@@ -52,7 +58,10 @@ const AddCards = () => {
       //emptyu
     }
   };
-
+ const handleAddCard=(cardTitle:string)=>{
+ setSelectCard(cardTitle);
+ setOpen(true);
+ };
 
 const handleGetColumn=async()=>{
      const token=localStorage.getItem('token');
@@ -101,6 +110,7 @@ useEffect(()=>{
   };
 
   return (
+    <>
     <div className="grid grid-cols-5 gap-4">
       {columns.map((col) => (
         <div
@@ -115,7 +125,7 @@ useEffect(()=>{
           </div>
 
           {col.cards.map((card) => (
-            <div key={card._id} className="p-2 mb-1 bg-white rounded shadow">
+            <div key={card._id} className="p-2 mb-1 bg-white rounded shadow" onClick={()=>handleAddCard(card.title)}>
               {card.title}
             </div>
           ))}
@@ -202,7 +212,18 @@ useEffect(()=>{
         <AddAnotherbtn onClick={() => setShowNewColumnForm(true)} />
       )}
     </div>
+  <ModalComponent
+    open={open}
+    onClose={handleModalClose}
+    title={selectCard}
+  >
+   <CardBody/>
+  </ModalComponent>
+    </>
   );
 };
 
 export default AddCards;
+
+
+
