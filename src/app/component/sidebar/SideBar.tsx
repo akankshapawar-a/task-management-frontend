@@ -24,13 +24,15 @@ import AddCards from "../addcards/AddCards";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/Redux/cards.Type";
 import Loader from "../reusableComponents/Loader";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const drawerWidth = 240;
 const DashBordIcon=[
-  {label:'Board',icon:<ArticleOutlinedIcon/>},
-  {label:'Table',icon:<TableChartOutlinedIcon/>},
-  {label:'Calendar',icon:<CalendarMonthOutlinedIcon/>},
-  {label:'Timeline',icon:<ViewTimelineOutlinedIcon/>}
+   { label: 'Board', icon: <ArticleOutlinedIcon />, route: '/board' },
+  { label: 'Table', icon: <TableChartOutlinedIcon />, route: '/table' },
+  { label: 'Calendar', icon: <CalendarMonthOutlinedIcon />, route: '/calendar' },
+  { label: 'Timeline', icon: <ViewTimelineOutlinedIcon />, route: '/timeline' }
 ];
 
 const openedMixin = (theme: Theme): CSSObject => ({
@@ -74,11 +76,16 @@ const Drawer = styled(MuiDrawer, {
 export default function Sidebar() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(true);
-  const {loading}=useSelector((state:RootState)=>state.board);
+  const {loading}=useSelector((state:RootState)=>state.board);  
+  const router = useRouter();
+
   const toggleDrawer = () => {
     setOpen((prev) => !prev);
   };
-
+ const handleNavigation = (route: string) => {
+    router.push(route);
+    
+  };
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -107,7 +114,7 @@ export default function Sidebar() {
         <List>
           {DashBordIcon.map((text, index) => (
             <ListItem key={index} disablePadding sx={{ display: "block" }}>
-              <ListItemButton
+              <ListItemButton  onClick={() => handleNavigation(text.route)}
                 sx={{
                   minHeight: 48,
                   px: 2.5,
