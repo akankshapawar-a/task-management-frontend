@@ -4,9 +4,8 @@ import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
-import { Checkbox, FormControlLabel } from '@mui/material';
-import Comments from '../cardbody/Comments';
-
+import { Checkbox, FormControlLabel, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 interface Props{
   open:boolean,
   onClose:()=>void;
@@ -28,7 +27,9 @@ const style = {
 };
 
 const ModalComponent:React.FC<Props>=({open, onClose,title,children})=>{
-
+  const handleClose=()=>{
+  onClose();
+  };
   return (
     <div>
       <Modal
@@ -36,10 +37,13 @@ const ModalComponent:React.FC<Props>=({open, onClose,title,children})=>{
         onClose={onClose}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
-
+        
       >
-      
         <Box sx={style}>
+          {/* <CloseIcon sx={{float:'right'}}/> */}
+           <IconButton aria-label="delete" sx={{float:'right'}} onClick={handleClose}>
+        <CloseIcon/>
+      </IconButton>
                 {title && (
         <FormControlLabel
           label={title}

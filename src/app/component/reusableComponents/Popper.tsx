@@ -1,37 +1,44 @@
 'use client'
 import * as React from 'react';
-import Box from '@mui/material/Box';
-import Popper, { PopperPlacementType } from '@mui/material/Popper';
-import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
-import Fade from '@mui/material/Fade';
 import Paper from '@mui/material/Paper';
-
-interface Props{
-  open:boolean;
-  anchorEl:HTMLButtonElement|null;
-children:React.ReactNode;
+import Popover from '@mui/material/Popover';
+import { Box, IconButton, Typography } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+interface Props {
+ onClose:()=>void;
+  anchorEl: HTMLElement | null; // ✅ broader type
+  children: React.ReactNode;
+  title?:string|null;
 }
-const Poppers:React.FC<Props>=({open,anchorEl,children})=>{
-//   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
-//   const [open, setOpen] = React.useState(false);
-  const [placement, setPlacement] = React.useState<PopperPlacementType>();
-  
+
+const Poppers: React.FC<Props>=({ anchorEl, children,onClose,title })=> {
+
+  const open = Boolean(anchorEl);
+  const id = open ? 'simple-popover' : undefined;
+
   return (
-    <Box sx={{ width: 500 }}>
-      <Popper
-        sx={{ zIndex: 1200 }}
+    <div>
+      <Popover
+        id={id}
         open={open}
         anchorEl={anchorEl}
-        placement={placement}
-        transition
+        onClose={onClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
       >
-            <Paper>
-              {children}
-            </Paper>
-      </Popper>
-    </Box>
+         <Paper sx={{ padding: 2, minWidth: 300, bgcolor: "white", border: "1px solid black" ,overflow:'auto' }}>
+          <Box sx={{display:'flex',justifyContent:'space-between'}}>
+          <Typography variant='h5'>{title}</Typography>
+            <IconButton aria-label="delete" sx={{float:'right'}} onClick={onClose}>
+        <CloseIcon/>
+      </IconButton>
+          </Box>
+       {children}
+       </Paper>
+      </Popover>
+    </div>
   );
 }
 
