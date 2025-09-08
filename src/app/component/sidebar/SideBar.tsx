@@ -21,6 +21,9 @@ import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import ViewTimelineOutlinedIcon from '@mui/icons-material/ViewTimelineOutlined';
 import AddCards from "../addcards/AddCards";
+import { useSelector } from "react-redux";
+import { RootState } from "@/app/Redux/cards.Type";
+import Loader from "../reusableComponents/Loader";
 
 const drawerWidth = 240;
 const DashBordIcon=[
@@ -71,7 +74,7 @@ const Drawer = styled(MuiDrawer, {
 export default function Sidebar() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(true);
-
+  const {loading}=useSelector((state:RootState)=>state.board);
   const toggleDrawer = () => {
     setOpen((prev) => !prev);
   };
@@ -132,6 +135,7 @@ export default function Sidebar() {
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Toolbar />
         <AddCards />
+       
       </Box>
     </Box>
   );
