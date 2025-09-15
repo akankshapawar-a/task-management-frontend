@@ -7,6 +7,8 @@ export interface Card {
   title: string;
   color: string;
   label:LabelData[],
+  startDate?:string,
+  dueDate?:string,
 }
 
 export interface Column {

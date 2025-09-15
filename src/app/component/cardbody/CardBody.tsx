@@ -13,7 +13,8 @@ import Date from '../addOptions/Date';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/app/Redux/cards.Type';
 import AddIcon from '@mui/icons-material/Add';
-
+import moment from "moment";
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 interface CardBodyProps {
   cardId: string,
 }
@@ -30,6 +31,8 @@ const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
   const [activeBtn, setActiveBtn] = useState<string | null>(null);
   const [usedButton, setUsedButton] = useState<string[]>([]);
   const [selectedLabels, setSelectedLabels] = useState<{ labelColor: string, labelTitle: string }[]>([]);
+  const [selectedStartDate, setSelectStartDate]=useState('');
+  const [selectDueDate , setSelectDueDate]=useState('');
   const { columns } = useSelector((state: RootState) => state.board);
 
   const currentCard = useMemo(() => {
@@ -53,6 +56,29 @@ useEffect(() => {
         }
         return prev;
       });
+    }else{
+      setSelectedLabels([]);
+      setUsedButton(prev => prev.filter(btn => btn !== 'labels'));
+
+    }
+
+    if (currentCard.startDate) {
+      setSelectStartDate(currentCard.startDate);
+      setUsedButton(prev => prev.includes('date') ? prev : [...prev, 'date']);
+    } else {
+      setSelectStartDate('');   // ✅ clear
+    }
+
+    if (currentCard.dueDate) {
+      setSelectDueDate(currentCard.dueDate);
+      setUsedButton(prev => prev.includes('date') ? prev : [...prev, 'date']);
+    } else {
+      setSelectDueDate('');     // ✅ clear
+    }
+
+    // ✅ remove date button if both are cleared
+    if (!currentCard.startDate && !currentCard.dueDate) {
+      setUsedButton(prev => prev.filter(btn => btn !== 'date'));
     }
   }
 }, [currentCard]);
@@ -80,7 +106,7 @@ useEffect(() => {
       case 'labels':
         return <Labels cardId={cardId} onClose={handleClose} />;
       case 'date':
-        return <Date />;
+        return <Date cardId={cardId} onClose={handleClose}/>;
       case 'checklist':
         return <p>Checklist</p>;
       case 'attachment':
@@ -90,6 +116,18 @@ useEffect(() => {
     }
   };
 
+   const ShowDate=(startDate?:string,dueDate?:string)=>{
+      if(!startDate && !dueDate) return null;
+      if(!startDate) return <><p className='text-sm text-gray-400'>Due Date</p><div className=" flex space-x-1"><p className='text-lg pt-0.5 '>{moment(dueDate).format('MMM DD')}</p> <IconButton sx={{ backgroundColor: 'transparent', borderRadius: '5px' }}  onClick={(event) => handleOpen(event , 'date')}>
+                  <KeyboardArrowDownIcon/>
+                </IconButton></div></>;
+      else if(!dueDate) return <><p className='text-sm text-gray-400'>Start Date</p><div className=" flex space-x-1"><p className=' text-lg pt-0.5' >{moment(startDate).format('MMM DD')}</p> <IconButton sx={{ backgroundColor: 'transparent', borderRadius: '5px' }}  onClick={(event) => handleOpen(event , 'date')}>
+                  <KeyboardArrowDownIcon/>
+                </IconButton></div></>;
+      else return <><p className='text-sm text-gray-400'>Dates</p><div className=" flex space-x-1"><p className=' text-lg pt-0.5'>{moment(startDate).format('MMM DD')}-{moment(dueDate).format('MMM DD')}</p> <IconButton sx={{ backgroundColor: 'transparent', borderRadius: '5px' }}  onClick={(event) => handleOpen(event , 'date')}>
+                  <KeyboardArrowDownIcon/>
+                </IconButton></div></>;
+    }
   const availableBtn = addTaskBtnLabel.filter(btn => !usedButton.includes(btn.value));
 
   return (
@@ -118,6 +156,7 @@ useEffect(() => {
         </div>
 
         <div>
+          <div>
           {selectedLabels.length > 0 &&
             <div>
               <p className='pt-2 text-gray-400'>Labels</p>
@@ -136,6 +175,13 @@ useEffect(() => {
                 </IconButton>
               </div>
             </div>}
+          
+               <div className=' align-middle my-10 flex'>
+      <p>{ShowDate(selectedStartDate,selectDueDate)}</p>
+      
+      </div>
+            
+</div>
           <div className='flex space-x-2 pt-14'>
             <DescriptionOutlinedIcon sx={{ color: '#626f86' }} />
             <p className=' text-xl'>Description</p>
