@@ -10,12 +10,14 @@ import ModalComponent from "../reusableComponents/ModalComponent";
 import CardBody from "../cardbody/CardBody";
 import { RootState } from "@/app/Redux/cards.Type";
 import { useSelector, useDispatch } from "react-redux";
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import {
   FETCH_ALL_CARDS_DATA,
   SET_LOADING,
   SHOW_NEW_COLUMN_FORM,
 } from "@/app/Redux/CardsReducer";
 import Loader from "../reusableComponents/Loader";
+import moment from "moment";
 
 const AddCards = () => {
   // const [columns, setColumns] = useState<Column[]>([]);
@@ -134,6 +136,12 @@ const AddCards = () => {
       </div>
     );
   }
+   const ShowDate=(startDate?:string,dueDate?:string)=>{
+    if(!startDate && !dueDate) return null;
+    if(!startDate) return <div className=" flex space-x-1"><AccessTimeIcon sx={{fontSize:'17px'}}/><p className='text-xs pt-0.5'>{moment(dueDate).format('MMM DD')}</p></div>;
+    else if(!dueDate) return <div className=" flex space-x-1"><AccessTimeIcon sx={{fontSize:'17px'}}/><p className=' text-xs  pt-0.5' >Starts:{moment(startDate).format('MMM DD')}</p></div>;
+    else return <div className=" flex space-x-1"><AccessTimeIcon sx={{fontSize:'17px'}}/><p className=' text-xs  pt-0.5'>{moment(startDate).format('MMM DD')}-{moment(dueDate).format('MMM DD')}</p></div>;
+  }
   return (
     <>
       <div className="grid grid-cols-5 gap-4">
@@ -175,6 +183,7 @@ const AddCards = () => {
                 ))}
                 </div>
                 <p>{card.title}</p>
+               {<div><p>{ShowDate(card.startDate,card.dueDate)}</p></div>}
               </div>
             ))}
 
