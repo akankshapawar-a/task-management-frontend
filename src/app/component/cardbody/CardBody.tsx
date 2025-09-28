@@ -15,6 +15,7 @@ import { RootState } from '@/app/Redux/cards.Type';
 import AddIcon from '@mui/icons-material/Add';
 import moment from "moment";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import TipTapFullEditor from './TextArea';
 interface CardBodyProps {
   cardId: string,
 }
@@ -34,7 +35,8 @@ const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
   const [selectedStartDate, setSelectStartDate]=useState('');
   const [selectDueDate , setSelectDueDate]=useState('');
   const { columns } = useSelector((state: RootState) => state.board);
-
+  const [description,setDescription]=useState('');
+  const [showEditor,setShowEditior]=useState(false);
   const currentCard = useMemo(() => {
     for (const column of columns) {
       const card = column.cards.find(c => c._id === cardId);
@@ -66,25 +68,27 @@ useEffect(() => {
       setSelectStartDate(currentCard.startDate);
       setUsedButton(prev => prev.includes('date') ? prev : [...prev, 'date']);
     } else {
-      setSelectStartDate('');   // ✅ clear
+      setSelectStartDate('');  
     }
 
     if (currentCard.dueDate) {
       setSelectDueDate(currentCard.dueDate);
       setUsedButton(prev => prev.includes('date') ? prev : [...prev, 'date']);
     } else {
-      setSelectDueDate('');     // ✅ clear
+      setSelectDueDate(''); 
     }
 
-    // ✅ remove date button if both are cleared
     if (!currentCard.startDate && !currentCard.dueDate) {
       setUsedButton(prev => prev.filter(btn => btn !== 'date'));
+    }
+    console.log(currentCard.description);
+    if(currentCard.description){
+      setDescription(currentCard.description);
     }
   }
 }, [currentCard]);
 
-
-  const handleOpen = (event: React.MouseEvent<HTMLButtonElement>, value: string) => {
+const handleOpen = (event: React.MouseEvent<HTMLButtonElement>, value: string) => {
     if (activeBtn === value) {
       setActiveBtn(null);
       setAnchorEl(null);
@@ -180,19 +184,25 @@ useEffect(() => {
       <p>{ShowDate(selectedStartDate,selectDueDate)}</p>
       
       </div>
-            
-</div>
-          <div className='flex space-x-2 pt-14'>
+     </div>
+          <div className='flex justify-between pt-2'>
+            <div className='flex space-x-2 pt-2'>
             <DescriptionOutlinedIcon sx={{ color: '#626f86' }} />
             <p className=' text-xl'>Description</p>
+              </div>
+              <div>
+                <Button sx={{background:"#0515240F",textTransform:"capitalize"}} onClick={()=>setShowEditior(true)}>Edit</Button>
+              </div>
           </div>
+          {!description || showEditor ?<TipTapFullEditor cardId={cardId} showEditor={showEditor} setShowEditior={setShowEditior} initalValue={description}/>:  <div className='ml-8 mt-3'>
+        <div dangerouslySetInnerHTML={{ __html: description}} />
+      </div>}
         </div>
       </div>
 
-      <div className=' ml-4'>
-        <Comments />
+      <div className=' ml-4 w-full'>
+        <Comments/>
       </div>
-
       <Poppers anchorEl={anchorEl} onClose={handleClose} title={activeBtn}>
         {handlePOpperScreen(activeBtn)}
       </Poppers>

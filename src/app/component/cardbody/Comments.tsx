@@ -1,13 +1,14 @@
  import React from 'react'
  import ChatOutlinedIcon from '@mui/icons-material/ChatOutlined';
+ import TipTapFullEditor from './TextArea';
  const Comments = () => {
    return (
      <div>
-         <div className='flex space-x-2 '>
+         <div className='flex space-x-2'>
         <ChatOutlinedIcon sx={{color:'#626f86'}}/>
         <p className=' text-xl'>Comments</p>
       </div>
-       <textarea/>
+     {/* <TipTapFullEditor cardId={''}/> */}
      </div>
    )
  }

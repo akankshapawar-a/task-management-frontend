@@ -1,85 +1,83 @@
-import React, { useRef } from "react";
-import {
-  Bold,
-  Italic,
-  Underline,
-  Strikethrough,
-  List,
-  ListOrdered,
-  Link,
-} from "lucide-react"; // nice clean icons
+"use client"
+import { useEffect, useState } from "react"
+import dynamic from "next/dynamic"
+import type { ReactQuillProps } from "react-quill-new"
+import "react-quill-new/dist/quill.snow.css"
+import { Box, Button } from "@mui/material"
+import axios from "axios"
+import { FETCH_ALL_CARDS_DATA } from "@/app/Redux/CardsReducer"
+import { useDispatch } from "react-redux"
 
-export default function TextArea() {
-  const editorRef = useRef<HTMLDivElement>(null);
+const ReactQuill = dynamic<ReactQuillProps>(
+  () => import("react-quill-new"),
+  { ssr: false }
+)
 
-  const handleFormat = (command: string) => {
-    document.execCommand(command, false);
-  };
+interface TextAreaProps{
+  cardId:string,
+  showEditor:boolean,
+  setShowEditior: React.Dispatch<React.SetStateAction<boolean>>; 
+  initalValue:string,
+}
+export default function TextArea({cardId,showEditor,setShowEditior,initalValue}:TextAreaProps) {
+  const [value, setValue] = useState<string>(initalValue||"");
+  const dispatch=useDispatch();
+  useEffect(()=>{
+    if(showEditor){
+     setValue(initalValue);
+    }
+  },[showEditor,initalValue])
+const handleDescription = async (value: string) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.put(
+      `http://127.0.0.1:5000/api/card/description/${cardId}`,
+      { description: value },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    if (response.data.status !== "SUCCESS") {
+      console.error("Save failed:", response.data);
+      return;
+    }
+    const boardResponse = await axios.get("http://127.0.0.1:5000/api/board", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (boardResponse.data.status === "SUCCESS") {
+      setValue('');
+      setShowEditior(false);
+      dispatch({
+        type: FETCH_ALL_CARDS_DATA,
+        payload: boardResponse.data.columns,
+      });
+    }
+  } catch (error) {
+    console.error("Error saving description:", error);
+  }
+};
 
   return (
-    <div className="w-full max-w-2xl mx-auto border rounded-2xl shadow-sm bg-white">
-      {/* Toolbar */}
-      <div className="flex items-center gap-2 border-b px-2 py-1 bg-gray-50 rounded-t-2xl">
-        <button
-          onClick={() => handleFormat("bold")}
-          className="p-2 hover:bg-gray-200 rounded-lg"
-        >
-          <Bold className="w-5 h-5" />
-        </button>
-        <button
-          onClick={() => handleFormat("italic")}
-          className="p-2 hover:bg-gray-200 rounded-lg"
-        >
-          <Italic className="w-5 h-5" />
-        </button>
-        <button
-          onClick={() => handleFormat("underline")}
-          className="p-2 hover:bg-gray-200 rounded-lg"
-        >
-          <Underline className="w-5 h-5" />
-        </button>
-        <button
-          onClick={() => handleFormat("strikeThrough")}
-          className="p-2 hover:bg-gray-200 rounded-lg"
-        >
-          <Strikethrough className="w-5 h-5" />
-        </button>
-        <button
-          onClick={() => handleFormat("insertUnorderedList")}
-          className="p-2 hover:bg-gray-200 rounded-lg"
-        >
-          <List className="w-5 h-5" />
-        </button>
-        <button
-          onClick={() => handleFormat("insertOrderedList")}
-          className="p-2 hover:bg-gray-200 rounded-lg"
-        >
-          <ListOrdered className="w-5 h-5" />
-        </button>
-        <button
-          onClick={() => handleFormat("createLink")}
-          className="p-2 hover:bg-gray-200 rounded-lg"
-        >
-          <Link className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Editable Text Box */}
-      <div
-        ref={editorRef}
-        contentEditable
-        suppressContentEditableWarning
-        className="min-h-[150px] p-3 focus:outline-none text-gray-800"
-      >
-        Type your message here...
-      </div>
-
-      {/* Send Bar */}
-      <div className="flex justify-end border-t px-3 py-2 bg-gray-50 rounded-b-2xl">
-        <button className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700">
-          Send
-        </button>
-      </div>
+  <div>
+    <div className="p-4 bg-gray-50 rounded-lg shadow-md">
+       {!showEditor && 
+       <input
+          type="text"
+          placeholder="Click to write..."
+          onFocus={() => setShowEditior(true)}
+          className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />}
+         {showEditor &&  <><ReactQuill
+        theme="snow"
+        value={value}
+        onChange={setValue}
+        placeholder="Write your description here..."
+        className="min-h-[100px] text-base leading-relaxed p-4" />
+        <Box sx={{ display: 'flex', gap: '4px', marginTop: '0.7rem' }}>
+        <Button variant="contained"onClick={(e) => { e.preventDefault(); handleDescription(value);}}>Save</Button>
+          <Button onClick={() => setShowEditior(false)}>Cancel</Button>
+        </Box></>}
     </div>
-  );
+    </div>
+  )
 }

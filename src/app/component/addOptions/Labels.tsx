@@ -108,7 +108,7 @@ const Labels: React.FC<LabelsProps> = ({ cardId, onClose }) => {
         if (onClose) onClose();
       }
     } catch (error) {
-      // console.error('Error saving labels:', error);
+      console.error('Error saving labels:', error);
     } finally {
       setLoading(false);
     }

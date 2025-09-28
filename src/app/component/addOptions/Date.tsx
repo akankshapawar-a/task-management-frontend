@@ -10,7 +10,6 @@ import { FETCH_ALL_CARDS_DATA } from '@/app/Redux/CardsReducer';
 import { useDispatch, useSelector } from 'react-redux';
 import dayjs, { Dayjs } from 'dayjs';
 import { RootState } from '@/app/Redux/cards.Type';
-import moment from "moment";
 interface DateProps {
   cardId: string;
   onClose?: () => void;

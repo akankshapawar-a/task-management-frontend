@@ -20,7 +20,6 @@ import TableChartOutlinedIcon from '@mui/icons-material/TableChartOutlined';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import ViewTimelineOutlinedIcon from '@mui/icons-material/ViewTimelineOutlined';
-import AddCards from "../addcards/AddCards";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/Redux/cards.Type";
 import Loader from "../reusableComponents/Loader";
@@ -29,7 +28,7 @@ import Link from "next/link";
 
 const drawerWidth = 240;
 const DashBordIcon=[
-   { label: 'Board', icon: <ArticleOutlinedIcon />, route: '/board' },
+   { label: 'Board', icon: <ArticleOutlinedIcon />, route: '/myboard' },
   { label: 'Table', icon: <TableChartOutlinedIcon />, route: '/table' },
   { label: 'Calendar', icon: <CalendarMonthOutlinedIcon />, route: '/calendar' },
   { label: 'Timeline', icon: <ViewTimelineOutlinedIcon />, route: '/timeline' }
@@ -91,7 +90,7 @@ export default function Sidebar() {
       <CssBaseline />
       <AppBar position="fixed" sx={{ zIndex: (th) => th.zIndex.drawer + 1 }}>
         <Toolbar>
-          <Typography variant="h6" noWrap component="div">
+          <Typography variant="h6" component="div">
             My Board
           </Typography>
         </Toolbar>
@@ -139,11 +138,16 @@ export default function Sidebar() {
           ))}
         </List>
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      {/* <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Toolbar />
-        <AddCards />
+        <Box sx={{ display: "flex" }}> 
+          
+          <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+            {children}
+          </Box>
+        </Box>
        
-      </Box>
+      </Box> */}
     </Box>
   );
 }

@@ -1,11 +1,10 @@
 import { Columns } from "./cards.Type";
 
 const FETCH_ALL_CARDS_DATA="FETCH_ALL_CARDS_DATA"
-const SHOW_ADD_CARDS="SHOW_ADD_CARDS"
 const SET_LOADING="SET_LOADING"
 const SHOW_NEW_COLUMN_FORM="SHOW_NEW_COLUMN_FORM"
 
-type ActionType=typeof FETCH_ALL_CARDS_DATA | typeof SHOW_ADD_CARDS | typeof SET_LOADING |typeof SHOW_NEW_COLUMN_FORM
+type ActionType=typeof FETCH_ALL_CARDS_DATA  | typeof SET_LOADING |typeof SHOW_NEW_COLUMN_FORM
 interface ActionInterface{
  type:ActionType,
  payload:unknown
