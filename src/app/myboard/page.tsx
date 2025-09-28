@@ -1,8 +1,9 @@
 import React from 'react'
+// import SideBar from '../component/sidebar/SideBar';
 import AddCards from '../component/addcards/AddCards';
-import SideBar from '../component/sidebar/SideBar';
 const page = () => {
-  return <><SideBar/></>;
+  return <> <AddCards /></>;
 }
 
 export default page
+

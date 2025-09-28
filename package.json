@@ -21,6 +21,7 @@
     "next": "15.4.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-quill-new": "^3.6.0",
     "react-redux": "^9.2.0",
     "react-toastify": "^11.0.5",
     "redux": "^5.0.1"

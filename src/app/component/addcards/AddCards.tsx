@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import AddIcon from "@mui/icons-material/Add";
-import { Button, IconButton } from "@mui/material";
+import { Button, IconButton, Tooltip } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import AddAnotherbtn from "./AddAnotherbtn";
 import axios from "axios";
@@ -18,7 +18,8 @@ import {
 } from "@/app/Redux/CardsReducer";
 import Loader from "../reusableComponents/Loader";
 import moment from "moment";
-
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import { stripHtml } from "@/app/utils/utils";
 const AddCards = () => {
   // const [columns, setColumns] = useState<Column[]>([]);
   const [newColumnTitle, setNewColumnTitle] = useState<string>("");
@@ -65,7 +66,7 @@ const AddCards = () => {
       // setShowNewColumnForm(false);
       dispatch({ type: SHOW_NEW_COLUMN_FORM, payload: false });
     } catch (error) {
-      //emptyu
+     console.error("Error saving description:", error);
     }
   };
   const handleAddCard = (cardTitle: string, cardId: string) => {
@@ -91,7 +92,7 @@ const AddCards = () => {
       }
       console.log(columns);
     } catch (error) {
-      //empty
+     console.error("Error saving description:", error);
     } finally {
       dispatch({ type: SET_LOADING, payload: false });
     }
@@ -125,7 +126,7 @@ const AddCards = () => {
         setShowAddCard((prev) => ({ ...prev, [columnId]: false }));
       }
     } catch (error) {
-      //empty
+     console.error("Error saving description:", error);
     }
   };
 
@@ -183,7 +184,7 @@ const AddCards = () => {
                 ))}
                 </div>
                 <p>{card.title}</p>
-               {<div><p>{ShowDate(card.startDate,card.dueDate)}</p></div>}
+               {<div className="flex space-x-2"><div>{ShowDate(card.startDate,card.dueDate)}</div>{card.description && <Tooltip title={stripHtml(card.description)}><DescriptionOutlinedIcon sx={{ color: '#626f86',fontSize:'1.2rem' }} /></Tooltip>}</div>}
               </div>
             ))}
 

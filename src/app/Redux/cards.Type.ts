@@ -1,3 +1,5 @@
+
+//rmdir /s /q .next
 export  interface LabelData{
   labelColor:string,
   labelTitle:string,
@@ -7,6 +9,7 @@ export interface Card {
   title: string;
   color: string;
   label:LabelData[],
+  description:string,
   startDate?:string,
   dueDate?:string,
 }
