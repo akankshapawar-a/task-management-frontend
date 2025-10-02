@@ -44,7 +44,7 @@ const AddCards = () => {
 
     try {
       const token = localStorage.getItem("token");
-      console.log("token", token);
+      // console.log("token", token);
       const newCol = {
         title: newColumnTitle,
       };
@@ -90,7 +90,7 @@ const AddCards = () => {
         dispatch({ type: FETCH_ALL_CARDS_DATA, payload: datauser });
         setNewColumnTitle(response.data.columns[0]?.title || "");
       }
-      console.log(columns);
+      // console.log(columns);
     } catch (error) {
      console.error("Error saving description:", error);
     } finally {

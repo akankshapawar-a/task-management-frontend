@@ -104,6 +104,7 @@ const handleOpen = (event: React.MouseEvent<HTMLButtonElement>, value: string) =
   const handleClose = () => {
     setAnchorEl(null);
   };
+  
 
   const handlePOpperScreen = (activeBtn: string | null) => {
     switch (activeBtn) {
@@ -194,14 +195,14 @@ const handleOpen = (event: React.MouseEvent<HTMLButtonElement>, value: string) =
                 <Button sx={{background:"#0515240F",textTransform:"capitalize"}} onClick={()=>setShowEditior(true)}>Edit</Button>
               </div>
           </div>
-          {!description || showEditor ?<TipTapFullEditor cardId={cardId} showEditor={showEditor} setShowEditior={setShowEditior} initalValue={description}/>:  <div className='ml-8 mt-3'>
+          {!description || showEditor ?<TipTapFullEditor cardId={cardId} showEditor={showEditor} setShowEditior={setShowEditior} initalValue={description} type='description' />:  <div className='ml-8 mt-3'>
         <div dangerouslySetInnerHTML={{ __html: description}} />
       </div>}
         </div>
       </div>
 
       <div className=' ml-4 w-full'>
-        <Comments/>
+        <Comments cardIds={cardId}/>
       </div>
       <Poppers anchorEl={anchorEl} onClose={handleClose} title={activeBtn}>
         {handlePOpperScreen(activeBtn)}

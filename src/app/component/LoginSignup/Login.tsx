@@ -38,10 +38,11 @@ const AuthForm = ({ type }: Type) => {
         `http://127.0.0.1:5000/api/${authapi}`,
         payload
       );
-        console.log('res',response.data);
+        // console.log('res',response.data.user.username);
        const token = response.data.token;
       if (token) {
         localStorage.setItem('token', token);
+        localStorage.setItem('username', response.data.user.username);
       }
       if (response.data.status === "SUCCESS") {
       

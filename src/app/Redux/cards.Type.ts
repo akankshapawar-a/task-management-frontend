@@ -24,6 +24,15 @@ export interface Columns{
    columns:Column[], 
    loading:boolean,
    showNewColumnForm:boolean;
+   comment:Comments[]
+}
+
+export interface Comments{
+  _id:string;
+  name:string,
+  comments:string,
+  date:string,
+  cardId:string
 }
 
 export interface RootState{
