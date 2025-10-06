@@ -10,6 +10,7 @@ export interface Card {
   color: string;
   label:LabelData[],
   description:string,
+  complete:boolean,
   startDate?:string,
   dueDate?:string,
 }

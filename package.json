@@ -24,7 +24,8 @@
     "react-quill-new": "^3.6.0",
     "react-redux": "^9.2.0",
     "react-toastify": "^11.0.5",
-    "redux": "^5.0.1"
+    "redux": "^5.0.1",
+    "sass": "^1.93.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
