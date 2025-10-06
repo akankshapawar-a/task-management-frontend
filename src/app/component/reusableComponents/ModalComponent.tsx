@@ -6,11 +6,17 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 import { Checkbox, FormControlLabel, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { updateCardStatus } from '@/app/utils/utils';
+import { useDispatch, useSelector } from 'react-redux';
+import { FETCH_ALL_CARDS_DATA } from '@/app/Redux/CardsReducer';
+import { RootState } from '@/app/Redux/cards.Type';
 interface Props{
   open:boolean,
   onClose:()=>void;
   title?:string;
   children:React.ReactNode;
+  cardId:string;
+  initialComplete:boolean
 }   
 const style = {
   position: 'absolute',
@@ -26,10 +32,48 @@ const style = {
  outline:'none',
 };
 
-const ModalComponent:React.FC<Props>=({open, onClose,title,children})=>{
+const ModalComponent:React.FC<Props>=({open, onClose,title,children,cardId,initialComplete=false})=>{
+   const [complete, setComplete] = React.useState(initialComplete);
+   const dispatch=useDispatch();
+     const { columns } = useSelector((state: RootState) => state.board);
   const handleClose=()=>{
   onClose();
   };
+  const currentCard = React.useMemo(() => {
+      for (const column of columns) {
+        const card = column.cards.find(c => c._id === cardId);
+        if (card) return card;
+      }
+      return null;
+    }, [columns, cardId]);
+
+React.useEffect(() => {
+  if (currentCard) {
+    setComplete(currentCard.complete ?? false);
+  }
+}, [currentCard]);
+
+const handleToggleComplete = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const newStatus = e.target.checked;
+  setComplete(newStatus);
+
+  const res = await updateCardStatus(cardId, newStatus);
+  if (res.status === "SUCCESS") {
+    // Update Redux locally (optional optimization)
+    dispatch({
+      type: FETCH_ALL_CARDS_DATA,
+      payload: columns.map(col => ({
+        ...col,
+        cards: col.cards.map(card =>
+          card._id === cardId ? { ...card, complete: newStatus } : card
+        )
+      })),
+    });
+  } else {
+    console.error("Error updating card status");
+  }
+};
+
   return (
     <div>
       <Modal
@@ -51,6 +95,8 @@ const ModalComponent:React.FC<Props>=({open, onClose,title,children})=>{
             <Checkbox
               icon={<PanoramaFishEyeIcon />}
               checkedIcon={<CheckCircleIcon sx={{color:'green'}}/>}
+              checked={complete}
+              onChange={handleToggleComplete}
             />
           }
           sx={{"& .MuiFormControlLabel-label":{

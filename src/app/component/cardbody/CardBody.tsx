@@ -37,6 +37,7 @@ const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
   const { columns } = useSelector((state: RootState) => state.board);
   const [description,setDescription]=useState('');
   const [showEditor,setShowEditior]=useState(false);
+  
   const currentCard = useMemo(() => {
     for (const column of columns) {
       const card = column.cards.find(c => c._id === cardId);
@@ -87,6 +88,7 @@ useEffect(() => {
     }
   }
 }, [currentCard]);
+
 
 const handleOpen = (event: React.MouseEvent<HTMLButtonElement>, value: string) => {
     if (activeBtn === value) {
@@ -212,3 +214,4 @@ const handleOpen = (event: React.MouseEvent<HTMLButtonElement>, value: string) =
 }
 
 export default CardBody;
+

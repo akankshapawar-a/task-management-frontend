@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import AddIcon from "@mui/icons-material/Add";
-import { Button, IconButton, Tooltip } from "@mui/material";
+import { Button, Checkbox, FormControlLabel, IconButton, Tooltip } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import AddAnotherbtn from "./AddAnotherbtn";
 import axios from "axios";
@@ -11,6 +11,8 @@ import CardBody from "../cardbody/CardBody";
 import { RootState } from "@/app/Redux/cards.Type";
 import { useSelector, useDispatch } from "react-redux";
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 import {
   FETCH_ALL_CARDS_DATA,
   SET_LOADING,
@@ -19,7 +21,7 @@ import {
 import Loader from "../reusableComponents/Loader";
 import moment from "moment";
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import { stripHtml } from "@/app/utils/utils";
+import { stripHtml, updateCardStatus } from "@/app/utils/utils";
 const AddCards = () => {
   // const [columns, setColumns] = useState<Column[]>([]);
   const [newColumnTitle, setNewColumnTitle] = useState<string>("");
@@ -31,6 +33,8 @@ const AddCards = () => {
   const [open, setOpen] = useState<boolean>(false);
   const [selectCard, setSelectCard] = useState("");
   const [selectCardId, setSelectCardId] = useState("");
+    const [isCompleted, setIsCompleted] = useState<boolean>(false);
+
   const { columns, loading, showNewColumnForm } = useSelector(
     (state: RootState) => state.board
   );
@@ -69,10 +73,11 @@ const AddCards = () => {
      console.error("Error saving description:", error);
     }
   };
-  const handleAddCard = (cardTitle: string, cardId: string) => {
+  const handleAddCard = (cardTitle: string, cardId: string,complete:boolean) => {
     setSelectCard(cardTitle);
     setSelectCardId(cardId);
     setOpen(true);
+     setIsCompleted(complete);
   };
 
   const handleGetColumn = async () => {
@@ -137,11 +142,20 @@ const AddCards = () => {
       </div>
     );
   }
+
    const ShowDate=(startDate?:string,dueDate?:string)=>{
     if(!startDate && !dueDate) return null;
     if(!startDate) return <div className=" flex space-x-1"><AccessTimeIcon sx={{fontSize:'17px'}}/><p className='text-xs pt-0.5'>{moment(dueDate).format('MMM DD')}</p></div>;
     else if(!dueDate) return <div className=" flex space-x-1"><AccessTimeIcon sx={{fontSize:'17px'}}/><p className=' text-xs  pt-0.5' >Starts:{moment(startDate).format('MMM DD')}</p></div>;
     else return <div className=" flex space-x-1"><AccessTimeIcon sx={{fontSize:'17px'}}/><p className=' text-xs  pt-0.5'>{moment(startDate).format('MMM DD')}-{moment(dueDate).format('MMM DD')}</p></div>;
+  }
+  const getStatus=(status:boolean)=>{
+   if(status){
+    return <div className=" bg-green-500 rounded-lg py-0 px-2"><span className="text-xs">complete</span></div>;
+   }
+   else{
+    return <div className=" bg-amber-500 rounded-lg py-0 px-2"><span className="text-xs">pending</span></div>;
+   }
   }
   return (
     <>
@@ -162,7 +176,7 @@ const AddCards = () => {
               <div
                 key={card._id}
                 className="p-2 mb-1 bg-white rounded shadow"
-                onClick={() => handleAddCard(card.title, card._id)}
+                onClick={() => handleAddCard(card.title, card._id,card.complete)}
               >
                 <div className=" flex space-x-1">
                 {card.label.map((labels) => (
@@ -174,17 +188,19 @@ const AddCards = () => {
                       style={{
                         backgroundColor: labels.labelColor,
                         borderRadius: "5px",
-                         padding:'2px 5px',
+                         padding:'3px 10px',
                          fontSize:'10px'
                       }}
                     >
-                      {labels.labelTitle}
+                      {/* {labels.labelTitle} */}
                     </div>
                   </div>
                 ))}
                 </div>
+                  
                 <p>{card.title}</p>
-               {<div className="flex space-x-2"><div>{ShowDate(card.startDate,card.dueDate)}</div>{card.description && <Tooltip title={stripHtml(card.description)}><DescriptionOutlinedIcon sx={{ color: '#626f86',fontSize:'1.2rem' }} /></Tooltip>}</div>}
+               {<div className="flex space-x-2"><div>{ShowDate(card.startDate,card.dueDate)}</div>{card.description && <Tooltip title={stripHtml(card.description)}><DescriptionOutlinedIcon sx={{ color: '#626f86',fontSize:'1.2rem' }} /></Tooltip>}<div> <p>{getStatus(card.complete)}</p>
+</div></div>}
               </div>
             ))}
 
@@ -280,7 +296,7 @@ const AddCards = () => {
           ))}
       </div>
 
-      <ModalComponent open={open} onClose={handleModalClose} title={selectCard}>
+      <ModalComponent open={open} onClose={handleModalClose} title={selectCard} cardId={selectCardId} initialComplete={isCompleted}>
         <CardBody cardId={selectCardId} />
       </ModalComponent>
     </>
