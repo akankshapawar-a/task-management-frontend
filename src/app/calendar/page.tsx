@@ -1,10 +1,12 @@
 
 import React from 'react'
+import CalendarView from '../component/calander/Calendar'
+
 
 const page = () => {
   return (
     <div>
-      <p>hi</p>
+<CalendarView/>
     </div>
   )
 }

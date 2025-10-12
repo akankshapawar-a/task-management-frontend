@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import AddIcon from "@mui/icons-material/Add";
-import { Button, Checkbox, FormControlLabel, IconButton, Tooltip } from "@mui/material";
+import { Button, IconButton, Tooltip } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import AddAnotherbtn from "./AddAnotherbtn";
 import axios from "axios";
@@ -11,8 +11,6 @@ import CardBody from "../cardbody/CardBody";
 import { RootState } from "@/app/Redux/cards.Type";
 import { useSelector, useDispatch } from "react-redux";
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
 import {
   FETCH_ALL_CARDS_DATA,
   SET_LOADING,
@@ -77,7 +75,7 @@ const AddCards = () => {
     setSelectCard(cardTitle);
     setSelectCardId(cardId);
     setOpen(true);
-     setIsCompleted(complete);
+    setIsCompleted(complete);
   };
 
   const handleGetColumn = async () => {

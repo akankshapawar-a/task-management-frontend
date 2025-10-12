@@ -1,5 +1,3 @@
-import Image from "next/image";
-import AddCards from "./component/addcards/AddCards";
 import AuthForm from "./component/LoginSignup/Login";
 
 export default function Home() {

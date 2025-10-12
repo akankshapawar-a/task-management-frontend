@@ -16,7 +16,7 @@ interface Props{
   title?:string;
   children:React.ReactNode;
   cardId:string;
-  initialComplete:boolean
+  initialComplete?:boolean
 }   
 const style = {
   position: 'absolute',

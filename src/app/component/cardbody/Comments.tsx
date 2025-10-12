@@ -22,7 +22,7 @@ const Comments = ({ cardIds }: CommentProps) => {
   const ParticularComment = comment.filter(
     (Comments) => Comments.cardId === cardIds
   );
-  console.log("comment", comment);
+  // console.log("comment", comment);
   const dispatch = useDispatch();
 
   const handleGetComment = async () => {
@@ -33,11 +33,11 @@ const Comments = ({ cardIds }: CommentProps) => {
       if (response.data.status === "SUCCESS") {
         const datauser = response.data.comments;
         dispatch({ type: SHOW_COMMENTS, payload: datauser });
-        console.log("data comment", datauser);
+        // console.log("data comment", datauser);
       }
-      console.log(response.data);
+      // console.log(response.data);
     } catch (error) {
-      console.error("Error saving comments:", error);
+      // console.error("Error saving comments:", error);
     } finally {
       // dispatch({ type: SET_LOADING, payload: false });
     }
@@ -59,12 +59,12 @@ const Comments = ({ cardIds }: CommentProps) => {
       const response = await axios.post(`${URL}card/newcomment`, payload);
 
       if (response.data.status !== "SUCCESS") {
-        console.error("Save failed:", response.data);
+        // console.error("Save failed:", response.data);
         return;
       }
       handleGetComment();
     } catch (error) {
-      console.error("Error saving description:", error);
+      // console.error("Error saving description:", error);
     }
   };
 
@@ -77,7 +77,7 @@ const Comments = ({ cardIds }: CommentProps) => {
         handleGetComment();
       }
     } catch (error) {
-      console.error("Error saving comments:", error);
+      // console.error("Error saving comments:", error);
     }
   };
   const handleCommentEdit = async (id: string, newText: string) => {
@@ -90,7 +90,7 @@ const Comments = ({ cardIds }: CommentProps) => {
         handleGetComment();
       }
     } catch (error) {
-      console.error("Error saving comments:", error);
+      // console.error("Error saving comments:", error);
     }
   };
   return (
