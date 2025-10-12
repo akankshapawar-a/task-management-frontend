@@ -1,5 +1,14 @@
 
 //rmdir /s /q .next
+
+export interface Attachment {
+  _id: string;
+  fileName: string;
+  filePath: string;
+  fileSize: number;
+  fileType: string;
+  uploadedAt: string;
+}
 export  interface LabelData{
   labelColor:string,
   labelTitle:string,
@@ -13,6 +22,7 @@ export interface Card {
   complete:boolean,
   startDate?:string,
   dueDate?:string,
+   attachments?: Attachment[];
 }
 
 export interface Column {
@@ -24,6 +34,7 @@ export interface Column {
 export interface Columns{
    columns:Column[], 
    loading:boolean,
+   cards: Card[];
    showNewColumnForm:boolean;
    comment:Comments[]
 }
