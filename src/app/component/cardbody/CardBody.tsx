@@ -10,14 +10,25 @@ import Poppers from '../reusableComponents/Popper';
 import LabelIcon from '@mui/icons-material/Label';
 import Labels from '../addOptions/Labels';
 import Date from '../addOptions/Date';
+import AttachmentComponent from '../addOptions/Attachment'; // Renamed to avoid conflict
 import { useSelector } from 'react-redux';
 import { RootState } from '@/app/Redux/cards.Type';
 import AddIcon from '@mui/icons-material/Add';
 import moment from "moment";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import TipTapFullEditor from './TextArea';
+
 interface CardBodyProps {
-  cardId: string,
+  cardId: string;
+}
+
+interface Attachment {
+  _id: string;
+  fileName: string;
+  filePath: string;
+  fileSize: number;
+  fileType: string;
+  uploadedAt: string;
 }
 
 const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
@@ -32,12 +43,14 @@ const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
   const [activeBtn, setActiveBtn] = useState<string | null>(null);
   const [usedButton, setUsedButton] = useState<string[]>([]);
   const [selectedLabels, setSelectedLabels] = useState<{ labelColor: string, labelTitle: string }[]>([]);
-  const [selectedStartDate, setSelectStartDate]=useState('');
-  const [selectDueDate , setSelectDueDate]=useState('');
+  const [selectedStartDate, setSelectStartDate] = useState('');
+  const [selectDueDate, setSelectDueDate] = useState('');
   const { columns } = useSelector((state: RootState) => state.board);
-  const [description,setDescription]=useState('');
-  const [showEditor,setShowEditior]=useState(false);
+  const [description, setDescription] = useState('');
+  const [showEditor, setShowEditior] = useState(false);
   
+  const [attachmentCount, setAttachmentCount] = useState(0); // Track attachments
+
   const currentCard = useMemo(() => {
     for (const column of columns) {
       const card = column.cards.find(c => c._id === cardId);
@@ -46,42 +59,51 @@ const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
     return null;
   }, [columns, cardId]);
 
-useEffect(() => {
-  if (currentCard) {
-    if (currentCard.label && currentCard.label.length > 0) {
-      setSelectedLabels(currentCard.label.map(l => ({
-        labelColor: l.labelColor,
-        labelTitle: l.labelTitle
-      })));
-      setUsedButton(prev => {
-        if (!prev.includes('labels')) {
-          return [...prev, 'labels'];
-        }
-        return prev;
-      });
-    }else{
-      setSelectedLabels([]);
-      setUsedButton(prev => prev.filter(btn => btn !== 'labels'));
+  useEffect(() => {
+    if (currentCard) {
+      if (currentCard.label && currentCard.label.length > 0) {
+        setSelectedLabels(currentCard.label.map(l => ({
+          labelColor: l.labelColor,
+          labelTitle: l.labelTitle
+        })));
+        setUsedButton(prev => {
+          if (!prev.includes('labels')) {
+            return [...prev, 'labels'];
+          }
+          return prev;
+        });
+      } else {
+        setSelectedLabels([]);
+        setUsedButton(prev => prev.filter(btn => btn !== 'labels'));
+      }
 
-    }
+      if (currentCard.startDate) {
+        setSelectStartDate(currentCard.startDate);
+        setUsedButton(prev => prev.includes('date') ? prev : [...prev, 'date']);
+      } else {
+        setSelectStartDate('');
+      }
 
-    if (currentCard.startDate) {
-      setSelectStartDate(currentCard.startDate);
-      setUsedButton(prev => prev.includes('date') ? prev : [...prev, 'date']);
-    } else {
-      setSelectStartDate('');  
-    }
-
-    if (currentCard.dueDate) {
-      setSelectDueDate(currentCard.dueDate);
-      setUsedButton(prev => prev.includes('date') ? prev : [...prev, 'date']);
-    } else {
-      setSelectDueDate(''); 
-    }
+      if (currentCard.dueDate) {
+        setSelectDueDate(currentCard.dueDate);
+        setUsedButton(prev => prev.includes('date') ? prev : [...prev, 'date']);
+      } else {
+        setSelectDueDate('');
+      }
 
     if (!currentCard.startDate && !currentCard.dueDate) {
       setUsedButton(prev => prev.filter(btn => btn !== 'date'));
     }
+
+     // Check for attachments
+      if (currentCard.attachments && currentCard.attachments.length > 0) {
+        setAttachmentCount(currentCard.attachments.length);
+        setUsedButton(prev => prev.includes('attachment') ? prev : [...prev, 'attachment']);
+      } else {
+        setAttachmentCount(0);
+        setUsedButton(prev => prev.filter(btn => btn !== 'attachment'));
+      }
+
     console.log(currentCard.description);
     if(currentCard.description){
       setDescription(currentCard.description);
@@ -90,7 +112,7 @@ useEffect(() => {
 }, [currentCard]);
 
 
-const handleOpen = (event: React.MouseEvent<HTMLButtonElement>, value: string) => {
+  const handleOpen = (event: React.MouseEvent<HTMLButtonElement>, value: string) => {
     if (activeBtn === value) {
       setActiveBtn(null);
       setAnchorEl(null);
@@ -113,28 +135,29 @@ const handleOpen = (event: React.MouseEvent<HTMLButtonElement>, value: string) =
       case 'labels':
         return <Labels cardId={cardId} onClose={handleClose} />;
       case 'date':
-        return <Date cardId={cardId} onClose={handleClose}/>;
+        return <Date cardId={cardId} onClose={handleClose} />;
       case 'checklist':
         return <p>Checklist</p>;
       case 'attachment':
-        return <p>Attachments</p>;
+        return <AttachmentComponent cardId={cardId} onClose={handleClose} />;
       default:
         return null;
     }
   };
 
-   const ShowDate=(startDate?:string,dueDate?:string)=>{
-      if(!startDate && !dueDate) return null;
-      if(!startDate) return <><p className='text-sm text-gray-400'>Due Date</p><div className=" flex space-x-1"><p className='text-lg pt-0.5 '>{moment(dueDate).format('MMM DD')}</p> <IconButton sx={{ backgroundColor: 'transparent', borderRadius: '5px' }}  onClick={(event) => handleOpen(event , 'date')}>
-                  <KeyboardArrowDownIcon/>
-                </IconButton></div></>;
-      else if(!dueDate) return <><p className='text-sm text-gray-400'>Start Date</p><div className=" flex space-x-1"><p className=' text-lg pt-0.5' >{moment(startDate).format('MMM DD')}</p> <IconButton sx={{ backgroundColor: 'transparent', borderRadius: '5px' }}  onClick={(event) => handleOpen(event , 'date')}>
-                  <KeyboardArrowDownIcon/>
-                </IconButton></div></>;
-      else return <><p className='text-sm text-gray-400'>Dates</p><div className=" flex space-x-1"><p className=' text-lg pt-0.5'>{moment(startDate).format('MMM DD')}-{moment(dueDate).format('MMM DD')}</p> <IconButton sx={{ backgroundColor: 'transparent', borderRadius: '5px' }}  onClick={(event) => handleOpen(event , 'date')}>
-                  <KeyboardArrowDownIcon/>
-                </IconButton></div></>;
-    }
+  const ShowDate = (startDate?: string, dueDate?: string) => {
+    if (!startDate && !dueDate) return null;
+    if (!startDate) return <><p className='text-sm text-gray-400'>Due Date</p><div className=" flex space-x-1"><p className='text-lg pt-0.5 '>{moment(dueDate).format('MMM DD')}</p> <IconButton sx={{ backgroundColor: 'transparent', borderRadius: '5px' }} onClick={(event) => handleOpen(event, 'date')}>
+      <KeyboardArrowDownIcon />
+    </IconButton></div></>;
+    else if (!dueDate) return <><p className='text-sm text-gray-400'>Start Date</p><div className=" flex space-x-1"><p className=' text-lg pt-0.5' >{moment(startDate).format('MMM DD')}</p> <IconButton sx={{ backgroundColor: 'transparent', borderRadius: '5px' }} onClick={(event) => handleOpen(event, 'date')}>
+      <KeyboardArrowDownIcon />
+    </IconButton></div></>;
+    else return <><p className='text-sm text-gray-400'>Dates</p><div className=" flex space-x-1"><p className=' text-lg pt-0.5'>{moment(startDate).format('MMM DD')}-{moment(dueDate).format('MMM DD')}</p> <IconButton sx={{ backgroundColor: 'transparent', borderRadius: '5px' }} onClick={(event) => handleOpen(event, 'date')}>
+      <KeyboardArrowDownIcon />
+    </IconButton></div></>;
+  }
+
   const availableBtn = addTaskBtnLabel.filter(btn => !usedButton.includes(btn.value));
 
   return (
@@ -164,38 +187,57 @@ const handleOpen = (event: React.MouseEvent<HTMLButtonElement>, value: string) =
 
         <div>
           <div>
-          {selectedLabels.length > 0 &&
-            <div>
-              <p className='pt-2 text-gray-400'>Labels</p>
-              <div className='flex space-x-1 pt-1.5'>
-                {selectedLabels.map((label, index) => (
-                  <div key={index} style={{
-                    backgroundColor: label.labelColor,
-                    borderRadius: '5px',
-                    padding: '0.6rem 1rem'
-                  }}>
-                    {label.labelTitle}
+            {selectedLabels.length > 0 &&
+              <div>
+                <p className='pt-2 text-gray-400'>Labels</p>
+                <div className='flex space-x-1 pt-1.5'>
+                  {selectedLabels.map((label, index) => (
+                    <div key={index} style={{
+                      backgroundColor: label.labelColor,
+                      borderRadius: '5px',
+                      padding: '0.6rem 1rem'
+                    }}>
+                      {label.labelTitle}
+                    </div>
+                  ))}
+                  <IconButton sx={{ backgroundColor: 'transparent', borderRadius: '5px' }} onClick={(event) => handleOpen(event, 'labels')}>
+                    <AddIcon />
+                  </IconButton>
+                </div>
+              </div>}
+
+            <div className=' align-middle my-10 flex'>
+              <p>{ShowDate(selectedStartDate, selectDueDate)}</p>
+            </div>
+
+            {/* Display Attachments Section */}
+            {attachmentCount > 0 &&
+              <div className='mb-6'>
+                <p className='text-sm text-gray-400'>Attachments</p>
+                <div className='flex items-center space-x-2 pt-1.5'>
+                  <div className='flex items-center space-x-1 bg-gray-100 rounded-lg px-3 py-2'>
+                    <AttachFileIcon sx={{ fontSize: 20, color: '#626f86' }} />
+                    <span className='text-sm font-medium'>{attachmentCount} file{attachmentCount > 1 ? 's' : ''}</span>
                   </div>
-                ))}
-                <IconButton sx={{ backgroundColor: 'transparent', borderRadius: '5px' }}  onClick={(event) => handleOpen(event , 'labels')}>
-                  <AddIcon />
-                </IconButton>
+                  <IconButton
+                    sx={{ backgroundColor: 'transparent', borderRadius: '5px' }}
+                    onClick={(event) => handleOpen(event, 'attachment')}
+                  >
+                    <AddIcon />
+                  </IconButton>
+                </div>
               </div>
-            </div>}
-          
-               <div className=' align-middle my-10 flex'>
-      <p>{ShowDate(selectedStartDate,selectDueDate)}</p>
-      
-      </div>
-     </div>
+            }
+          </div>
+
           <div className='flex justify-between pt-2'>
             <div className='flex space-x-2 pt-2'>
-            <DescriptionOutlinedIcon sx={{ color: '#626f86' }} />
-            <p className=' text-xl'>Description</p>
-              </div>
-              <div>
-                <Button sx={{background:"#0515240F",textTransform:"capitalize"}} onClick={()=>setShowEditior(true)}>Edit</Button>
-              </div>
+              <DescriptionOutlinedIcon sx={{ color: '#626f86' }} />
+              <p className=' text-xl'>Description</p>
+            </div>
+            <div>
+              <Button sx={{ background: "#0515240F", textTransform: "capitalize" }} onClick={() => setShowEditior(true)}>Edit</Button>
+            </div>
           </div>
           {!description || showEditor ?<TipTapFullEditor cardId={cardId} showEditor={showEditor} setShowEditior={setShowEditior} initalValue={description} type='description' />:  <div className='ml-8 mt-3'>
         <div dangerouslySetInnerHTML={{ __html: description}} />
@@ -214,4 +256,3 @@ const handleOpen = (event: React.MouseEvent<HTMLButtonElement>, value: string) =
 }
 
 export default CardBody;
-
