@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PanoramaFishEyeIcon from '@mui/icons-material/PanoramaFishEye';
-import { Checkbox, FormControlLabel, IconButton } from '@mui/material';
+import { Checkbox, Divider, FormControlLabel, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { updateCardStatus } from '@/app/utils/utils';
 import { useDispatch, useSelector } from 'react-redux';
@@ -89,20 +89,18 @@ const handleToggleComplete = async (e: React.ChangeEvent<HTMLInputElement>) => {
         <CloseIcon/>
       </IconButton>
                 {title && (
-        <FormControlLabel
-          label={title}
-          control={
-            <Checkbox
-              icon={<PanoramaFishEyeIcon />}
-              checkedIcon={<CheckCircleIcon sx={{color:'green'}}/>}
-              checked={complete}
-              onChange={handleToggleComplete}
-            />
-          }
-          sx={{"& .MuiFormControlLabel-label":{
-            fontSize:'2rem',
-          }}}
-        />
+        <><FormControlLabel
+              label={title}
+              control={<Checkbox
+                icon={<PanoramaFishEyeIcon />}
+                checkedIcon={<CheckCircleIcon sx={{ color: 'green' }} />}
+                checked={complete}
+                onChange={handleToggleComplete} />}
+              sx={{
+                "& .MuiFormControlLabel-label": {
+                  fontSize: '2rem',
+                }
+              }} /><Divider sx={{ my: 2 }} /></>
       )}
       {children}
           </Box>

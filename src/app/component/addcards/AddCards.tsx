@@ -19,34 +19,32 @@ import {
 import Loader from "../reusableComponents/Loader";
 import moment from "moment";
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import { stripHtml, updateCardStatus } from "@/app/utils/utils";
+import { stripHtml} from "@/app/utils/utils";
+
 const AddCards = () => {
-  // const [columns, setColumns] = useState<Column[]>([]);
   const [newColumnTitle, setNewColumnTitle] = useState<string>("");
-  // const [showNewColumnForm, setShowNewColumnForm] = useState<boolean>(false);
-  const [showAddCard, setShowAddCard] = useState<{ [key: string]: boolean }>(
-    {}
-  );
+  const [showAddCard, setShowAddCard] = useState<{ [key: string]: boolean }>({});
   const [newCardText, setNewCardText] = useState<{ [key: string]: string }>({});
   const [open, setOpen] = useState<boolean>(false);
   const [selectCard, setSelectCard] = useState("");
   const [selectCardId, setSelectCardId] = useState("");
-    const [isCompleted, setIsCompleted] = useState<boolean>(false);
+  const [isCompleted, setIsCompleted] = useState<boolean>(false);
 
   const { columns, loading, showNewColumnForm } = useSelector(
     (state: RootState) => state.board
   );
 
   const dispatch = useDispatch();
+  
   const handleModalClose = () => {
     setOpen(false);
   };
+
   const handleAddNewColumn = async () => {
     if (newColumnTitle.trim() === "") return;
 
     try {
       const token = localStorage.getItem("token");
-      // console.log("token", token);
       const newCol = {
         title: newColumnTitle,
       };
@@ -63,15 +61,14 @@ const AddCards = () => {
       if (response.data.status === "SUCCESS") {
         handleGetColumn();
       }
-      // setColumns(response.data);
       setNewColumnTitle("");
-      // setShowNewColumnForm(false);
       dispatch({ type: SHOW_NEW_COLUMN_FORM, payload: false });
     } catch (error) {
-     console.error("Error saving description:", error);
+      console.error("Error saving description:", error);
     }
   };
-  const handleAddCard = (cardTitle: string, cardId: string,complete:boolean) => {
+
+  const handleAddCard = (cardTitle: string, cardId: string, complete: boolean) => {
     setSelectCard(cardTitle);
     setSelectCardId(cardId);
     setOpen(true);
@@ -93,9 +90,8 @@ const AddCards = () => {
         dispatch({ type: FETCH_ALL_CARDS_DATA, payload: datauser });
         setNewColumnTitle(response.data.columns[0]?.title || "");
       }
-      // console.log(columns);
     } catch (error) {
-     console.error("Error saving description:", error);
+      console.error("Error saving description:", error);
     } finally {
       dispatch({ type: SET_LOADING, payload: false });
     }
@@ -103,6 +99,7 @@ const AddCards = () => {
 
   useEffect(() => {
     handleGetColumn();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAddCardToColumn = async (columnId: string) => {
@@ -113,9 +110,6 @@ const AddCards = () => {
     const newCard = {
       title: cardTitle,
       color: "blue",
-      // label:[
-      //   {labelColor,labelTitle}
-      // ]
     };
     try {
       const response = await axios.post(url, newCard, {
@@ -129,7 +123,7 @@ const AddCards = () => {
         setShowAddCard((prev) => ({ ...prev, [columnId]: false }));
       }
     } catch (error) {
-     console.error("Error saving description:", error);
+      console.error("Error saving description:", error);
     }
   };
 
@@ -141,142 +135,188 @@ const AddCards = () => {
     );
   }
 
-   const ShowDate=(startDate?:string,dueDate?:string)=>{
-    if(!startDate && !dueDate) return null;
-    if(!startDate) return <div className=" flex space-x-1"><AccessTimeIcon sx={{fontSize:'17px'}}/><p className='text-xs pt-0.5'>{moment(dueDate).format('MMM DD')}</p></div>;
-    else if(!dueDate) return <div className=" flex space-x-1"><AccessTimeIcon sx={{fontSize:'17px'}}/><p className=' text-xs  pt-0.5' >Starts:{moment(startDate).format('MMM DD')}</p></div>;
-    else return <div className=" flex space-x-1"><AccessTimeIcon sx={{fontSize:'17px'}}/><p className=' text-xs  pt-0.5'>{moment(startDate).format('MMM DD')}-{moment(dueDate).format('MMM DD')}</p></div>;
-  }
-  const getStatus=(status:boolean)=>{
-   if(status){
-    return <div className=" bg-green-500 rounded-lg py-0 px-2"><span className="text-xs">complete</span></div>;
-   }
-   else{
-    return <div className=" bg-amber-500 rounded-lg py-0 px-2"><span className="text-xs">pending</span></div>;
-   }
-  }
+  const ShowDate = (startDate?: string, dueDate?: string) => {
+    if (!startDate && !dueDate) return null;
+    if (!startDate) return (
+      <div className="flex space-x-1">
+        <AccessTimeIcon sx={{ fontSize: '17px' }} />
+        <p className='text-xs pt-0.5'>{moment(dueDate).format('MMM DD')}</p>
+      </div>
+    );
+    else if (!dueDate) return (
+      <div className="flex space-x-1">
+        <AccessTimeIcon sx={{ fontSize: '17px' }} />
+        <p className='text-xs pt-0.5'>Starts:{moment(startDate).format('MMM DD')}</p>
+      </div>
+    );
+    else return (
+      <div className="flex space-x-1">
+        <AccessTimeIcon sx={{ fontSize: '17px' }} />
+        <p className='text-xs pt-0.5'>{moment(startDate).format('MMM DD')}-{moment(dueDate).format('MMM DD')}</p>
+      </div>
+    );
+  };
+
+  const getStatus = (status: boolean) => {
+    if (status) {
+      return <div className="bg-green-500 rounded-lg py-0 px-2"><span className="text-xs">complete</span></div>;
+    } else {
+      return <div className="bg-amber-500 rounded-lg py-0 px-2"><span className="text-xs">pending</span></div>;
+    }
+  };
+
   return (
     <>
-      <div className="grid grid-cols-5 gap-4">
+      <div className="flex overflow-x-auto space-x-4 pb-4 h-[calc(100vh-200px)]">
         {columns.map((col) => (
           <div
             key={col._id}
-            className="bg-green-50 p-2 rounded-lg border-2 overflow-y-auto h-4/5"
+            className="rounded-xl w-64 flex-shrink-0 flex flex-col shadow-sm h-fit max-h-full"
+            style={{backgroundColor:'#f1f2f4'}}
           >
-            <div className="flex justify-between items-center mb-2">
-              <p>{col.title}</p>
+            {/* Column Header */}
+            <div className="flex justify-between items-center p-2 flex-shrink-0">
+              <p className="font-semibold">{col.title}</p>
               <IconButton sx={{ padding: "0px" }}>
                 <MoreHorizIcon />
               </IconButton>
             </div>
 
-            {col.cards.map((card) => (
-              <div
-                key={card._id}
-                className="p-2 mb-1 bg-white rounded shadow"
-                onClick={() => handleAddCard(card.title, card._id,card.complete)}
-              >
-                <div className=" flex space-x-1">
-                {card.label.map((labels) => (
-                  <div
-                    key={labels.labelColor}
-                  
-                  >
-                    <div
-                      style={{
-                        backgroundColor: labels.labelColor,
-                        borderRadius: "5px",
-                         padding:'3px 10px',
-                         fontSize:'10px'
+            {/* Cards Container - Grows with content, has scroll */}
+            <div className="overflow-y-auto px-2 py-2 space-y-2 flex-1 min-h-0">
+              {col.cards.map((card) => (
+                <div
+                  key={card._id}
+                  className="p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-200 hover:border hover:border-blue-500"
+                  onClick={() => handleAddCard(card.title, card._id, card.complete)}
+                >
+                  {/* Labels */}
+                  {card.label.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {card.label.map((labels) => (
+                        <div
+                          key={labels.labelColor}
+                          style={{
+                            backgroundColor: labels.labelColor,
+                            borderRadius: "5px",
+                            padding: '3px 10px',
+                            fontSize: '10px',
+                            fontWeight: '600',
+                            color: 'white'
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Card Title */}
+                  <p className="text-sm font-medium mb-2">{card.title}</p>
+
+                  {/* Card Meta Info */}
+                  <div className="flex justify-between items-center mt-2">
+                    <div className="flex items-center space-x-2">
+                      {ShowDate(card.startDate, card.dueDate)}
+                      {card.description && (
+                        <Tooltip title={stripHtml(card.description)}>
+                          <DescriptionOutlinedIcon sx={{ color: '#626f86', fontSize: '1.2rem' }} />
+                        </Tooltip>
+                      )}
+                    </div>
+                    <div>{getStatus(card.complete)}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add Card Section - Always at bottom */}
+            <div className="p-2 flex-shrink-0">
+              {showAddCard[col._id] ? (
+                <div>
+                  <textarea
+                    placeholder="Enter a title for this card..."
+                    className="w-full p-2 rounded border resize-none"
+                    rows={3}
+                    value={newCardText[col._id] || ""}
+                    onChange={(e) =>
+                      setNewCardText((prev) => ({
+                        ...prev,
+                        [col._id]: e.target.value,
+                      }))
+                    }
+                  />
+                  <div className="flex items-center mt-2 space-x-1">
+                    <Button
+                      variant="contained"
+                      onClick={() => handleAddCardToColumn(col._id)}
+                      sx={{
+                        textTransform: "capitalize",
+                        borderRadius: "8px",
+                        padding: "4px 12px",
+                        fontSize: "14px"
                       }}
                     >
-                      {/* {labels.labelTitle} */}
-                    </div>
+                      Add Card
+                    </Button>
+                    <IconButton
+                      size="small"
+                      onClick={() =>
+                        setShowAddCard((prev) => ({ ...prev, [col._id]: false }))
+                      }
+                    >
+                      <CloseIcon />
+                    </IconButton>
                   </div>
-                ))}
                 </div>
-                  
-                <p>{card.title}</p>
-               {<div className="flex space-x-2"><div>{ShowDate(card.startDate,card.dueDate)}</div>{card.description && <Tooltip title={stripHtml(card.description)}><DescriptionOutlinedIcon sx={{ color: '#626f86',fontSize:'1.2rem' }} /></Tooltip>}<div> <p>{getStatus(card.complete)}</p>
-</div></div>}
-              </div>
-            ))}
-
-            {showAddCard[col._id] ? (
-              <div>
-                <textarea
-                  placeholder="Enter a title for this card..."
-                  className="w-full p-2 rounded border"
-                  value={newCardText[col._id] || ""}
-                  onChange={(e) =>
-                    setNewCardText((prev) => ({
-                      ...prev,
-                      [col._id]: e.target.value,
-                    }))
+              ) : (
+                <Button
+                  startIcon={<AddIcon />}
+                  onClick={() =>
+                    setShowAddCard((prev) => ({ ...prev, [col._id]: true }))
                   }
-                />
-                <div className="flex items-center mt-1">
-                  <Button
-                    variant="contained"
-                    onClick={() => handleAddCardToColumn(col._id)}
-                    sx={{
-                      textTransform: "capitalize",
-                      borderRadius: "8px",
-                      padding: "0px 10px",
-                    }}
-                  >
-                    Add Card
-                  </Button>
-                  <IconButton
-                    onClick={() =>
-                      setShowAddCard((prev) => ({ ...prev, [col._id]: false }))
+                  sx={{
+                    textTransform: "capitalize",
+                    width: "100%",
+                    borderRadius: "8px",
+                    justifyContent: "left",
+                    color: "text.secondary",
+                    '&:hover': {
+                      backgroundColor: 'rgba(0,0,0,0.05)'
                     }
-                  >
-                    <CloseIcon />
-                  </IconButton>
-                </div>
-              </div>
-            ) : (
-              <Button
-                startIcon={<AddIcon />}
-                onClick={() =>
-                  setShowAddCard((prev) => ({ ...prev, [col._id]: true }))
-                }
-                sx={{
-                  textTransform: "capitalize",
-                  width: "100%",
-                  borderRadius: "8px",
-                  justifyContent: "left",
-                }}
-              >
-                Add Cards
-              </Button>
-            )}
+                  }}
+                >
+                  Add a card
+                </Button>
+              )}
+            </div>
           </div>
         ))}
 
+        {/* Add New Column Section */}
         {!loading &&
           (showNewColumnForm ? (
-            <div className="bg-gray-100 p-2 rounded-lg border-2 w-64">
+            <div className="bg-gray-100 p-3 rounded-xl border-2 w-64 flex-shrink-0 h-fit">
               <textarea
                 placeholder="Enter list title..."
-                className="w-full p-2 rounded border"
+                className="w-full p-2 rounded border resize-none"
+                rows={2}
                 value={newColumnTitle}
                 onChange={(e) => setNewColumnTitle(e.target.value)}
               />
-              <div className="flex items-center mt-1">
+              <div className="flex items-center mt-2 space-x-1">
                 <Button
                   variant="contained"
                   onClick={handleAddNewColumn}
                   sx={{
                     textTransform: "capitalize",
                     borderRadius: "8px",
-                    padding: "0px 10px",
+                    padding: "4px 12px",
+                    fontSize: "14px"
                   }}
                 >
-                  Add Another Card
+                  Add List
                 </Button>
                 <IconButton
+                  size="small"
                   onClick={() =>
                     dispatch({ type: SHOW_NEW_COLUMN_FORM, payload: false })
                   }

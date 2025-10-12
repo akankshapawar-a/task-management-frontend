@@ -10,7 +10,7 @@ import Poppers from '../reusableComponents/Popper';
 import LabelIcon from '@mui/icons-material/Label';
 import Labels from '../addOptions/Labels';
 import Date from '../addOptions/Date';
-import AttachmentComponent from '../addOptions/Attachment'; // Renamed to avoid conflict
+import AttachmentComponent from '../addOptions/Attachment';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/app/Redux/cards.Type';
 import AddIcon from '@mui/icons-material/Add';
@@ -21,16 +21,6 @@ import TipTapFullEditor from './TextArea';
 interface CardBodyProps {
   cardId: string;
 }
-
-interface Attachment {
-  _id: string;
-  fileName: string;
-  filePath: string;
-  fileSize: number;
-  fileType: string;
-  uploadedAt: string;
-}
-
 const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
   const addTaskBtnLabel = [
     { label: 'Labels', value: 'labels', icon: <LabelIcon /> },
@@ -147,13 +137,13 @@ const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
 
   const ShowDate = (startDate?: string, dueDate?: string) => {
     if (!startDate && !dueDate) return null;
-    if (!startDate) return <><p className='text-sm text-gray-400'>Due Date</p><div className=" flex space-x-1"><p className='text-lg pt-0.5 '>{moment(dueDate).format('MMM DD')}</p> <IconButton sx={{ backgroundColor: 'transparent', borderRadius: '5px' }} onClick={(event) => handleOpen(event, 'date')}>
+    if (!startDate) return <><p className='text-sm text-gray-400'>Due Date</p><div className=" flex space-x-1" style={{backgroundColor:'#DADADA',alignItems:'center',borderRadius:'6px'}}><p className='text-base pt-0.5 pl-2'>{moment(dueDate).format('MMM DD')}</p> <IconButton sx={{ backgroundColor: 'transparent', borderRadius: '5px' }} onClick={(event) => handleOpen(event, 'date')}>
       <KeyboardArrowDownIcon />
     </IconButton></div></>;
-    else if (!dueDate) return <><p className='text-sm text-gray-400'>Start Date</p><div className=" flex space-x-1"><p className=' text-lg pt-0.5' >{moment(startDate).format('MMM DD')}</p> <IconButton sx={{ backgroundColor: 'transparent', borderRadius: '5px' }} onClick={(event) => handleOpen(event, 'date')}>
+    else if (!dueDate) return <><p className='text-sm text-gray-400'>Start Date</p><div className=" flex space-x-1"style={{backgroundColor:'#DADADA',alignItems:'center',borderRadius:'6px'}} ><p className='text-base pt-0.5 pl-2' >{moment(startDate).format('MMM DD')}</p> <IconButton sx={{ backgroundColor: 'transparent', borderRadius: '5px' }} onClick={(event) => handleOpen(event, 'date')}>
       <KeyboardArrowDownIcon />
     </IconButton></div></>;
-    else return <><p className='text-sm text-gray-400'>Dates</p><div className=" flex space-x-1"><p className=' text-lg pt-0.5'>{moment(startDate).format('MMM DD')}-{moment(dueDate).format('MMM DD')}</p> <IconButton sx={{ backgroundColor: 'transparent', borderRadius: '5px' }} onClick={(event) => handleOpen(event, 'date')}>
+    else return <><p className='text-sm text-gray-400'>Dates</p><div className=" flex space-x-1" style={{backgroundColor:'#DADADA',alignItems:'center',borderRadius:'6px'}}><p className='text-base pt-0.5 pl-2'>{moment(startDate).format('MMM DD')}-{moment(dueDate).format('MMM DD')}</p> <IconButton sx={{ backgroundColor: 'transparent', borderRadius: '5px' }} onClick={(event) => handleOpen(event, 'date')}>
       <KeyboardArrowDownIcon />
     </IconButton></div></>;
   }
@@ -161,9 +151,9 @@ const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
   const availableBtn = addTaskBtnLabel.filter(btn => !usedButton.includes(btn.value));
 
   return (
-    <div className='flex space-x-9'>
-      <div>
-        <div className='flex space-x-2.5 pl-8'>
+    <div className='flex gap-8 w-full h-[50vh] overflow-hidden'>
+      <div className="w-1/2 pr-8 border-r border-gray-200 overflow-y-auto ">
+        <div className='flex space-x-2.5'>
           {availableBtn.map((btn, index) => {
             const Icon = btn.icon;
             return (
@@ -245,7 +235,7 @@ const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
         </div>
       </div>
 
-      <div className=' ml-4 w-full'>
+      <div className=' w-2/5 pl-4 overflow-y-auto'>
         <Comments cardIds={cardId}/>
       </div>
       <Poppers anchorEl={anchorEl} onClose={handleClose} title={activeBtn}>
@@ -256,3 +246,4 @@ const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
 }
 
 export default CardBody;
+
