@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // components/addOptions/Attachment.tsx
 import React, { useState, useRef } from 'react';
 import { Box, Button, LinearProgress, IconButton } from '@mui/material';

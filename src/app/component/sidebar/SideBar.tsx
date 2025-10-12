@@ -31,7 +31,7 @@ const DashBordIcon=[
    { label: 'Board', icon: <ArticleOutlinedIcon />, route: '/myboard' },
   { label: 'Table', icon: <TableChartOutlinedIcon />, route: '/table' },
   { label: 'Calendar', icon: <CalendarMonthOutlinedIcon />, route: '/calendar' },
-  { label: 'Timeline', icon: <ViewTimelineOutlinedIcon />, route: '/timeline' }
+  // { label: 'Timeline', icon: <ViewTimelineOutlinedIcon />, route: '/timeline' }
 ];
 
 const openedMixin = (theme: Theme): CSSObject => ({
@@ -88,7 +88,7 @@ export default function Sidebar() {
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
-      <AppBar position="fixed" sx={{ zIndex: (th) => th.zIndex.drawer + 1 }}>
+      <AppBar position="fixed" sx={{ zIndex: (th) => th.zIndex.drawer + 1,backgroundColor: "#5e2ca5"}}>
         <Toolbar>
           <Typography variant="h6" component="div">
             My Board
