@@ -10,7 +10,7 @@ import ModalComponent from "../reusableComponents/ModalComponent";
 import CardBody from "../cardbody/CardBody";
 import { RootState } from "@/app/Redux/cards.Type";
 import { useSelector, useDispatch } from "react-redux";
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import {
   FETCH_ALL_CARDS_DATA,
   SET_LOADING,
@@ -18,12 +18,14 @@ import {
 } from "@/app/Redux/CardsReducer";
 import Loader from "../reusableComponents/Loader";
 import moment from "moment";
-import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import { stripHtml} from "@/app/utils/utils";
-
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import { stripHtml } from "@/app/utils/utils";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 const AddCards = () => {
   const [newColumnTitle, setNewColumnTitle] = useState<string>("");
-  const [showAddCard, setShowAddCard] = useState<{ [key: string]: boolean }>({});
+  const [showAddCard, setShowAddCard] = useState<{ [key: string]: boolean }>(
+    {}
+  );
   const [newCardText, setNewCardText] = useState<{ [key: string]: string }>({});
   const [open, setOpen] = useState<boolean>(false);
   const [selectCard, setSelectCard] = useState("");
@@ -35,7 +37,7 @@ const AddCards = () => {
   );
 
   const dispatch = useDispatch();
-  
+
   const handleModalClose = () => {
     setOpen(false);
   };
@@ -68,7 +70,11 @@ const AddCards = () => {
     }
   };
 
-  const handleAddCard = (cardTitle: string, cardId: string, complete: boolean) => {
+  const handleAddCard = (
+    cardTitle: string,
+    cardId: string,
+    complete: boolean
+  ) => {
     setSelectCard(cardTitle);
     setSelectCardId(cardId);
     setOpen(true);
@@ -99,7 +105,7 @@ const AddCards = () => {
 
   useEffect(() => {
     handleGetColumn();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAddCardToColumn = async (columnId: string) => {
@@ -135,33 +141,64 @@ const AddCards = () => {
     );
   }
 
+  const handleDeleteCard=async(cardId:string)=>{
+    const token = localStorage.getItem("token");
+    try{
+    const response=await axios.delete(`http://127.0.0.1:5000/api/card/delete/${cardId}`,{
+       headers: {
+          Authorization: `Bearer ${token}`,
+        },}
+    );
+    if (response.data.status === "SUCCESS") {
+        handleGetColumn();
+      }
+    }catch (error) {
+      console.error("Error saving description:", error);
+    }
+  }
   const ShowDate = (startDate?: string, dueDate?: string) => {
     if (!startDate && !dueDate) return null;
-    if (!startDate) return (
-      <div className="flex space-x-1">
-        <AccessTimeIcon sx={{ fontSize: '17px' }} />
-        <p className='text-xs pt-0.5'>{moment(dueDate).format('MMM DD')}</p>
-      </div>
-    );
-    else if (!dueDate) return (
-      <div className="flex space-x-1">
-        <AccessTimeIcon sx={{ fontSize: '17px' }} />
-        <p className='text-xs pt-0.5'>Starts:{moment(startDate).format('MMM DD')}</p>
-      </div>
-    );
-    else return (
-      <div className="flex space-x-1">
-        <AccessTimeIcon sx={{ fontSize: '17px' }} />
-        <p className='text-xs pt-0.5'>{moment(startDate).format('MMM DD')}-{moment(dueDate).format('MMM DD')}</p>
-      </div>
-    );
+    if (!startDate)
+      return (
+        <div className="flex space-x-1">
+          <AccessTimeIcon sx={{ fontSize: "17px" }} />
+          <p className="text-xs pt-0.5">{moment(dueDate).format("MMM DD")}</p>
+        </div>
+      );
+    else if (!dueDate)
+      return (
+        <div className="flex space-x-1">
+          <AccessTimeIcon sx={{ fontSize: "17px" }} />
+          <p className="text-xs pt-0.5">
+            Starts:{moment(startDate).format("MMM DD")}
+          </p>
+        </div>
+      );
+    else
+      return (
+        <div className="flex space-x-1">
+          <AccessTimeIcon sx={{ fontSize: "17px" }} />
+          <p className="text-xs pt-0.5">
+            {moment(startDate).format("MMM DD")}-
+            {moment(dueDate).format("MMM DD")}
+          </p>
+        </div>
+      );
   };
 
   const getStatus = (status: boolean) => {
     if (status) {
-      return <div className="bg-green-500 rounded-lg py-0 px-2"><span className="text-xs">complete</span></div>;
+      return (
+        <div className="bg-green-500 rounded-lg py-0 px-2">
+          <span className="text-xs">complete</span>
+        </div>
+      );
     } else {
-      return <div className="bg-amber-500 rounded-lg py-0 px-2"><span className="text-xs">pending</span></div>;
+      return (
+        <div className="bg-amber-500 rounded-lg py-0 px-2">
+          <span className="text-xs">pending</span>
+        </div>
+      );
     }
   };
 
@@ -172,7 +209,7 @@ const AddCards = () => {
           <div
             key={col._id}
             className="rounded-xl w-64 flex-shrink-0 flex flex-col shadow-sm h-fit max-h-full"
-            style={{backgroundColor:'#f1f2f4'}}
+            style={{ backgroundColor: "#f1f2f4" }}
           >
             {/* Column Header */}
             <div className="flex justify-between items-center p-2 flex-shrink-0">
@@ -188,7 +225,9 @@ const AddCards = () => {
                 <div
                   key={card._id}
                   className="p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-200 hover:border hover:border-blue-500"
-                  onClick={() => handleAddCard(card.title, card._id, card.complete)}
+                  onClick={() =>
+                    handleAddCard(card.title, card._id, card.complete)
+                  }
                 >
                   {/* Labels */}
                   {card.label.length > 0 && (
@@ -199,26 +238,40 @@ const AddCards = () => {
                           style={{
                             backgroundColor: labels.labelColor,
                             borderRadius: "5px",
-                            padding: '3px 10px',
-                            fontSize: '10px',
-                            fontWeight: '600',
-                            color: 'white'
+                            padding: "3px 10px",
+                            fontSize: "10px",
+                            fontWeight: "600",
+                            color: "white",
                           }}
                         />
                       ))}
                     </div>
                   )}
-
-                  {/* Card Title */}
-                  <p className="text-sm font-medium mb-2">{card.title}</p>
-
+                  <div className="flex justify-between group">
+                    {/* Card Title */}
+                    <p className="text-sm font-medium mb-2">{card.title}</p>
+                    <IconButton
+                      size="small"
+                      className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent modal from opening
+                        handleDeleteCard(card._id)
+                      }}
+                    >
+                      <DeleteForeverIcon
+                        sx={{ fontSize: 18, color: "#ef4444" }}
+                      />
+                    </IconButton>
+                  </div>
                   {/* Card Meta Info */}
                   <div className="flex justify-between items-center mt-2">
                     <div className="flex items-center space-x-2">
                       {ShowDate(card.startDate, card.dueDate)}
                       {card.description && (
                         <Tooltip title={stripHtml(card.description)}>
-                          <DescriptionOutlinedIcon sx={{ color: '#626f86', fontSize: '1.2rem' }} />
+                          <DescriptionOutlinedIcon
+                            sx={{ color: "#626f86", fontSize: "1.2rem" }}
+                          />
                         </Tooltip>
                       )}
                     </div>
@@ -252,7 +305,7 @@ const AddCards = () => {
                         textTransform: "capitalize",
                         borderRadius: "8px",
                         padding: "4px 12px",
-                        fontSize: "14px"
+                        fontSize: "14px",
                       }}
                     >
                       Add Card
@@ -260,7 +313,10 @@ const AddCards = () => {
                     <IconButton
                       size="small"
                       onClick={() =>
-                        setShowAddCard((prev) => ({ ...prev, [col._id]: false }))
+                        setShowAddCard((prev) => ({
+                          ...prev,
+                          [col._id]: false,
+                        }))
                       }
                     >
                       <CloseIcon />
@@ -279,9 +335,9 @@ const AddCards = () => {
                     borderRadius: "8px",
                     justifyContent: "left",
                     color: "text.secondary",
-                    '&:hover': {
-                      backgroundColor: 'rgba(0,0,0,0.05)'
-                    }
+                    "&:hover": {
+                      backgroundColor: "rgba(0,0,0,0.05)",
+                    },
                   }}
                 >
                   Add a card
@@ -310,7 +366,7 @@ const AddCards = () => {
                     textTransform: "capitalize",
                     borderRadius: "8px",
                     padding: "4px 12px",
-                    fontSize: "14px"
+                    fontSize: "14px",
                   }}
                 >
                   Add List
@@ -334,7 +390,13 @@ const AddCards = () => {
           ))}
       </div>
 
-      <ModalComponent open={open} onClose={handleModalClose} title={selectCard} cardId={selectCardId} initialComplete={isCompleted}>
+      <ModalComponent
+        open={open}
+        onClose={handleModalClose}
+        title={selectCard}
+        cardId={selectCardId}
+        initialComplete={isCompleted}
+      >
         <CardBody cardId={selectCardId} />
       </ModalComponent>
     </>
