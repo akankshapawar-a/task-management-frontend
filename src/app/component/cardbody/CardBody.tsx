@@ -1,9 +1,8 @@
 'use client'
 import { Box, Button, IconButton } from '@mui/material'
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import ChecklistIcon from '@mui/icons-material/Checklist';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import Comments from './Comments';
 import Poppers from '../reusableComponents/Popper';
@@ -17,15 +16,30 @@ import AddIcon from '@mui/icons-material/Add';
 import moment from "moment";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import TipTapFullEditor from './TextArea';
-
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import DownloadIcon from '@mui/icons-material/Download';
+import DeleteIcon from '@mui/icons-material/Delete';
+import axios from 'axios';
+import DateSelector from '../addOptions/Date';
 interface CardBodyProps {
   cardId: string;
 }
+
+interface Attachment {
+  _id: string;
+  fileName: string;
+  filePath: string;
+  fileSize: number;
+  fileType: string;
+  uploadedAt: string;
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
 const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
   const addTaskBtnLabel = [
     { label: 'Labels', value: 'labels', icon: <LabelIcon /> },
     { label: 'Date', value: 'date', icon: <AccessTimeIcon /> },
-    { label: 'Checklist', value: 'checklist', icon: <ChecklistIcon /> },
     { label: 'Attachment', value: 'attachment', icon: <AttachFileIcon /> },
   ];
 
@@ -39,7 +53,9 @@ const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
   const [description, setDescription] = useState('');
   const [showEditor, setShowEditior] = useState(false);
   
-  const [attachmentCount, setAttachmentCount] = useState(0); // Track attachments
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [attachmentCount, setAttachmentCount] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const currentCard = useMemo(() => {
     for (const column of columns) {
@@ -49,8 +65,36 @@ const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
     return null;
   }, [columns, cardId]);
 
+  // Function to fetch fresh attachment data from API
+  const fetchAttachmentsFromAPI = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/attachments/${cardId}`);
+      const fetchedAttachments = response.data.attachments || [];
+      
+      setAttachments(fetchedAttachments);
+      setAttachmentCount(fetchedAttachments.length);
+      
+      if (fetchedAttachments.length > 0) {
+        setUsedButton(prev => prev.includes('attachment') ? prev : [...prev, 'attachment']);
+      } else {
+        setUsedButton(prev => prev.filter(btn => btn !== 'attachment'));
+      }
+      
+      return fetchedAttachments;
+    } catch (err) {
+      console.error('Error fetching attachments:', err);
+      return [];
+    }
+  }, [cardId]);
+
+  // Initial load and when cardId changes
+  useEffect(() => {
+    fetchAttachmentsFromAPI();
+  }, [cardId, fetchAttachmentsFromAPI, refreshKey]);
+
   useEffect(() => {
     if (currentCard) {
+      // Labels
       if (currentCard.label && currentCard.label.length > 0) {
         setSelectedLabels(currentCard.label.map(l => ({
           labelColor: l.labelColor,
@@ -67,6 +111,7 @@ const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
         setUsedButton(prev => prev.filter(btn => btn !== 'labels'));
       }
 
+      // Dates
       if (currentCard.startDate) {
         setSelectStartDate(currentCard.startDate);
         setUsedButton(prev => prev.includes('date') ? prev : [...prev, 'date']);
@@ -81,26 +126,28 @@ const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
         setSelectDueDate('');
       }
 
-    if (!currentCard.startDate && !currentCard.dueDate) {
-      setUsedButton(prev => prev.filter(btn => btn !== 'date'));
-    }
-
-     // Check for attachments
-      if (currentCard.attachments && currentCard.attachments.length > 0) {
-        setAttachmentCount(currentCard.attachments.length);
-        setUsedButton(prev => prev.includes('attachment') ? prev : [...prev, 'attachment']);
-      } else {
-        setAttachmentCount(0);
-        setUsedButton(prev => prev.filter(btn => btn !== 'attachment'));
+      if (!currentCard.startDate && !currentCard.dueDate) {
+        setUsedButton(prev => prev.filter(btn => btn !== 'date'));
       }
 
-    console.log(currentCard.description);
-    if(currentCard.description){
-      setDescription(currentCard.description);
-    }
-  }
-}, [currentCard]);
+      // Attachments - only update if local state is empty (first load)
+      if (currentCard.attachments && currentCard.attachments.length > 0) {
+        if (attachments.length === 0) {
+          setAttachments(currentCard.attachments);
+          setAttachmentCount(currentCard.attachments.length);
+          setUsedButton(prev => prev.includes('attachment') ? prev : [...prev, 'attachment']);
+        }
+      } else if (attachments.length === 0) {
+        setAttachments([]);
+        setAttachmentCount(0);
+      }
 
+      // Description
+      if(currentCard.description){
+        setDescription(currentCard.description);
+      }
+    }
+  }, [currentCard]);
 
   const handleOpen = (event: React.MouseEvent<HTMLButtonElement>, value: string) => {
     if (activeBtn === value) {
@@ -117,8 +164,87 @@ const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
 
   const handleClose = () => {
     setAnchorEl(null);
+    setActiveBtn(null);
   };
-  
+
+  // Callback when attachments are added/deleted from popup
+  const handleAttachmentChange = useCallback(async () => {
+    await fetchAttachmentsFromAPI();
+    setRefreshKey(prev => prev + 1);
+  }, [fetchAttachmentsFromAPI]);
+
+  const handleDownload = async (attachmentId: string, fileName: string) => {
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/attachments/${cardId}/${attachmentId}/download`,
+        { responseType: 'blob' }
+      );
+
+      const blob = new Blob([response.data]);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download error:', err);
+      alert('Failed to download file');
+    }
+  };
+
+  const handleDeleteFromCard = async (attachmentId: string) => {
+    if (!confirm('Are you sure you want to delete this attachment?')) {
+      return;
+    }
+
+    const previousAttachments = [...attachments];
+    const updatedAttachments = attachments.filter(att => att._id !== attachmentId);
+    
+    setAttachments(updatedAttachments);
+    setAttachmentCount(updatedAttachments.length);
+    
+    if (updatedAttachments.length === 0) {
+      setUsedButton(prev => prev.filter(btn => btn !== 'attachment'));
+    }
+
+    try {
+      const response = await axios.delete(
+        `${API_URL}/api/attachments/${cardId}/${attachmentId}`
+      );
+      
+      if (response.data && response.data.card && response.data.card.attachments) {
+        const serverAttachments = response.data.card.attachments;
+        setAttachments(serverAttachments);
+        setAttachmentCount(serverAttachments.length);
+        
+        if (serverAttachments.length === 0) {
+          setUsedButton(prev => prev.filter(btn => btn !== 'attachment'));
+        }
+      }
+      
+      setRefreshKey(prev => prev + 1);
+    } catch (err: any) {
+      console.error('Delete error:', err);
+      console.error('Error details:', err.response?.data);
+      
+      setAttachments(previousAttachments);
+      setAttachmentCount(previousAttachments.length);
+      setUsedButton(prev => prev.includes('attachment') ? prev : [...prev, 'attachment']);
+      
+      alert(err.response?.data?.message || 'Failed to delete attachment. Please try again.');
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  };
 
   const handlePOpperScreen = (activeBtn: string | null) => {
     switch (activeBtn) {
@@ -126,10 +252,8 @@ const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
         return <Labels cardId={cardId} onClose={handleClose} />;
       case 'date':
         return <Date cardId={cardId} onClose={handleClose} />;
-      case 'checklist':
-        return <p>Checklist</p>;
       case 'attachment':
-        return <AttachmentComponent cardId={cardId} onClose={handleClose} />;
+        return <AttachmentComponent cardId={cardId} onClose={handleClose} onAttachmentChange={handleAttachmentChange} />;
       default:
         return null;
     }
@@ -196,42 +320,85 @@ const CardBody: React.FC<CardBodyProps> = ({ cardId }) => {
                 </div>
               </div>}
 
-            <div className=' align-middle my-10 flex'>
-              <p>{ShowDate(selectedStartDate, selectDueDate)}</p>
+            <div className='align-middle my-10 flex'>
+              <div>{ShowDate(selectedStartDate, selectDueDate)}</div>
             </div>
 
-            {/* Display Attachments Section */}
-            {attachmentCount > 0 &&
+            {/* Display Attachments Section with Files */}
+            {attachmentCount > 0 && (
               <div className='mb-6'>
-                <p className='text-sm text-gray-400'>Attachments</p>
-                <div className='flex items-center space-x-2 pt-1.5'>
-                  <div className='flex items-center space-x-1 bg-gray-100 rounded-lg px-3 py-2'>
-                    <AttachFileIcon sx={{ fontSize: 20, color: '#626f86' }} />
-                    <span className='text-sm font-medium'>{attachmentCount} file{attachmentCount > 1 ? 's' : ''}</span>
+                <div className='flex items-center justify-between mb-3'>
+                  <div className='flex items-center space-x-2'>
+                    <AttachFileIcon sx={{ color: '#626f86' }} />
+                    <p className='text-xl'>Attachments</p>
                   </div>
                   <IconButton
-                    sx={{ backgroundColor: 'transparent', borderRadius: '5px' }}
+                    sx={{ backgroundColor: '#0515240F', borderRadius: '5px' }}
                     onClick={(event) => handleOpen(event, 'attachment')}
+                    size="small"
                   >
                     <AddIcon />
                   </IconButton>
                 </div>
+                
+               <div className='space-y-2 ml-8'>
+  {attachments.map((attachment) => {
+    const uploadDate = new globalThis.Date(attachment.uploadedAt);
+    return (
+      <div
+        key={attachment._id}
+        className='border rounded-lg p-3 hover:bg-gray-50 transition-colors'
+      >
+        <div className='flex items-start space-x-3'>
+          <div className='flex-shrink-0'>
+            <InsertDriveFileIcon sx={{ fontSize: 40, color: '#626f86' }} />
+          </div>
+          <div className='flex-1 min-w-0'>
+            <p className='text-sm font-medium text-gray-900 truncate'>
+              {attachment.fileName}
+            </p>
+            <p className='text-xs text-gray-500'>
+              {formatFileSize(attachment.fileSize)} • {uploadDate.toLocaleDateString()}
+            </p>
+          </div>
+          <div className='flex space-x-1'>
+            <IconButton
+              size='small'
+              onClick={() => handleDownload(attachment._id, attachment.fileName)}
+              title='Download'
+            >
+              <DownloadIcon fontSize='small' />
+            </IconButton>
+            <IconButton
+              size='small'
+              onClick={() => handleDeleteFromCard(attachment._id)}
+              title='Delete'
+              sx={{ color: '#e53e3e' }}
+            >
+              <DeleteIcon fontSize='small' />
+            </IconButton>
+          </div>
+        </div>
+      </div>
+    );
+  })}
+</div>
               </div>
-            }
+            )}
           </div>
 
           <div className='flex justify-between pt-2'>
             <div className='flex space-x-2 pt-2'>
               <DescriptionOutlinedIcon sx={{ color: '#626f86' }} />
-              <p className=' text-xl'>Description</p>
+              <p className='text-xl'>Description</p>
             </div>
             <div>
               <Button sx={{ background: "#0515240F", textTransform: "capitalize" }} onClick={() => setShowEditior(true)}>Edit</Button>
             </div>
           </div>
-          {!description || showEditor ?<TipTapFullEditor cardId={cardId} showEditor={showEditor} setShowEditior={setShowEditior} initalValue={description} type='description' />:  <div className='ml-8 mt-3'>
-        <div dangerouslySetInnerHTML={{ __html: description}} />
-      </div>}
+          {!description || showEditor ? <TipTapFullEditor cardId={cardId} showEditor={showEditor} setShowEditior={setShowEditior} initalValue={description} type='description' /> : <div className='ml-8 mt-3'>
+            <div dangerouslySetInnerHTML={{ __html: description}} />
+          </div>}
         </div>
       </div>
 

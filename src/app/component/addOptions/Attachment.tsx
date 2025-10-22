@@ -3,15 +3,12 @@
 import React, { useState, useRef } from 'react';
 import { Box, Button, LinearProgress, IconButton } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import DeleteIcon from '@mui/icons-material/Delete';
-import DownloadIcon from '@mui/icons-material/Download';
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
 
 interface AttachmentProps {
   cardId: string;
   onClose: () => void;
+  onAttachmentChange?: () => void; // Callback to notify parent of changes
 }
 
 interface Attachment {
@@ -23,17 +20,15 @@ interface Attachment {
   uploadedAt: string;
 }
 
-// Backend API URL - adjust as needed
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
-const Attachment: React.FC<AttachmentProps> = ({ cardId, onClose }) => {
+const Attachment: React.FC<AttachmentProps> = ({ cardId, onClose, onAttachmentChange }) => {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch attachments on component mount
   React.useEffect(() => {
     fetchAttachments();
   }, [cardId]);
@@ -42,7 +37,7 @@ const Attachment: React.FC<AttachmentProps> = ({ cardId, onClose }) => {
     try {
       const response = await axios.get(`${API_URL}/api/attachments/${cardId}`);
       setAttachments(response.data.attachments || []);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error fetching attachments:', err);
       setError('Failed to load attachments');
     }
@@ -56,7 +51,6 @@ const Attachment: React.FC<AttachmentProps> = ({ cardId, onClose }) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file size (10MB)
     if (file.size > 10 * 1024 * 1024) {
       setError('File size must be less than 10MB');
       return;
@@ -89,9 +83,13 @@ const Attachment: React.FC<AttachmentProps> = ({ cardId, onClose }) => {
       setAttachments(response.data.card.attachments);
       setUploadProgress(0);
       
-      // Clear file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
+      }
+
+      // Notify parent component of the change
+      if (onAttachmentChange) {
+        onAttachmentChange();
       }
     } catch (err: any) {
       console.error('Upload error:', err);
@@ -112,6 +110,11 @@ const Attachment: React.FC<AttachmentProps> = ({ cardId, onClose }) => {
       );
       setAttachments(response.data.card.attachments);
       setError(null);
+
+      // Notify parent component of the change
+      if (onAttachmentChange) {
+        onAttachmentChange();
+      }
     } catch (err: any) {
       console.error('Delete error:', err);
       setError(err.response?.data?.message || 'Failed to delete attachment');
@@ -133,7 +136,7 @@ const Attachment: React.FC<AttachmentProps> = ({ cardId, onClose }) => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Download error:', err);
       setError('Failed to download file');
     }
@@ -147,17 +150,13 @@ const Attachment: React.FC<AttachmentProps> = ({ cardId, onClose }) => {
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
 
-  const getFileIcon = (fileType: string) => {
-    return <InsertDriveFileIcon sx={{ fontSize: 40, color: '#626f86' }} />;
-  };
-
   return (
     <Box sx={{ width: 320, p: 2 }}>
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">Attachments</h3>
-        <IconButton size="small" onClick={onClose}>
+       
+        {/* <IconButton size="small" onClick={onClose}>
           <CloseIcon />
-        </IconButton>
+        </IconButton> */}
       </div>
 
       {error && (
@@ -198,7 +197,7 @@ const Attachment: React.FC<AttachmentProps> = ({ cardId, onClose }) => {
         </Box>
       )}
 
-      <div className="space-y-2 max-h-96 overflow-y-auto">
+      {/* <div className="space-y-2 max-h-96 overflow-y-auto">
         {attachments.length === 0 && !uploading && (
           <p className="text-center text-gray-500 py-4">No attachments yet</p>
         )}
@@ -210,7 +209,7 @@ const Attachment: React.FC<AttachmentProps> = ({ cardId, onClose }) => {
           >
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
-                {getFileIcon(attachment.fileType)}
+                <InsertDriveFileIcon sx={{ fontSize: 40, color: '#626f86' }} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
@@ -240,7 +239,7 @@ const Attachment: React.FC<AttachmentProps> = ({ cardId, onClose }) => {
             </div>
           </div>
         ))}
-      </div>
+      </div> */}
     </Box>
   );
 };
